@@ -1,2 +1,3 @@
-# openshifter
-A tool for simple OpenShift cluster deployment
+# OpenShifter
+
+A tool provision and install OpenShift clusters.
