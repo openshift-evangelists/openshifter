@@ -12,7 +12,17 @@ import (
 // Deployment defines the top-level structure of the
 // deployment definition file.
 type Deployment struct {
-	Provider string `yaml:"provider"`
+	Provider Provider `yaml:"provider"`
+}
+
+// Provider defines properties specific to
+// infrastructure provider; not all fields
+// may be defined for all providers
+type Provider struct {
+	Type   string `yaml:"type"`
+	Region string `yaml:"region"`
+	Key    string `yaml:"key"`
+	Secret string `yaml:"secret"`
 }
 
 // Load loads a YAML representation of the
@@ -37,7 +47,7 @@ func Load() (Deployment, error) {
 // Create provisions an OpenShift cluster
 // based on the deployment definition.
 func Create(dpl Deployment) {
-	log.WithFields(log.Fields{"func": "Create"}).Info(fmt.Sprintf("Creating OpenShift cluster on %s", dpl.Provider))
+	log.WithFields(log.Fields{"func": "Create"}).Info(fmt.Sprintf("Creating OpenShift cluster on %s in %s", dpl.Provider.Type, dpl.Provider.Region))
 }
 
 // Destroy destroys an OpenShift cluster

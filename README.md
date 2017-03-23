@@ -14,3 +14,17 @@ Arguments:
         The operation to carry out.
         Supported values are [create destroy] (default "create")
 ```
+
+Example:
+
+```bash
+$ cat work/aws.yml
+provider:
+  type: AWS
+  region: eu-west-1
+  key: ***********************
+  secret: *************************************
+
+$ openshifter -d work/aws.yml
+INFO[0000] Creating OpenShift cluster on AWS in eu-west-1  func=Create
+```
