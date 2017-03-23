@@ -45,6 +45,7 @@ func Load() (Deployment, error) {
 	if err := yaml.Unmarshal(raw, &dpl); err != nil { // can't de-serialize
 		return dpl, err
 	}
+	log.WithFields(log.Fields{"func": "Load"}).Debug(dpl)
 	return dpl, nil
 }
 

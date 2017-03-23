@@ -219,7 +219,7 @@ resource "aws_security_group" "openshift-public-egress" {
   }
 }
 
-//  Security group which allows SSH access to a host. Used for the bastion.
+//  Security group which allows SSH access to a host.
 resource "aws_security_group" "openshift-ssh" {
   name        = "openshift-ssh"
   description = "Security group that allows public ingress over SSH."

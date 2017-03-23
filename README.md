@@ -10,9 +10,6 @@ Usage: openshifter [args]
 Arguments:
   -d, --definition string
         The file containing the deployment definition. (default "cluster.yml")
-  -o, --operation string
-        The operation to carry out.
-        Supported values are [create destroy] (default "create")
 ```
 
 Example:
@@ -27,11 +24,11 @@ provider:
   key: ***********************
   secret: *************************************
 
-$ openshifter -d work/aws.yml
+$ openshifter create -d work/aws.yml
 INFO[0000] Creating OpenShift cluster on AWS in eu-west-1  func=Create
 ...
 
-$ openshifter -o destroy -d work/aws.yml
+$ openshifter destroy -d work/aws.yml
 INFO[0000] Destroying OpenShift cluster on AWS in eu-west-1  func=Destroy
 ...
 ```

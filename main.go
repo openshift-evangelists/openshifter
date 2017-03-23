@@ -18,14 +18,15 @@ var (
 )
 
 func init() {
-	flag.StringVarP(&op, "operation", "o", "create", fmt.Sprintf("The operation to carry out.\n\tSupported values are %v", oplist))
 	flag.StringVarP(&ddfile, "definition", "d", "cluster.yml", fmt.Sprintf("The file containing the deployment definition."))
 	flag.Usage = func() {
-		fmt.Printf("Usage: openshifter [args]\n\n")
+		fmt.Printf("Usage: openshifter create|destroy [args]\n\n")
 		fmt.Println("Arguments:")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+
+	op = flag.Args()[0]
 
 	if envd := os.Getenv("DEBUG"); envd != "" {
 		log.SetLevel(log.DebugLevel)
@@ -45,5 +46,7 @@ func main() {
 		Create(dpl)
 	case "destroy":
 		Destroy(dpl)
+	default:
+		log.Error(fmt.Sprintf("%s is an unknown operation", op))
 	}
 }
