@@ -21,10 +21,17 @@ Example:
 $ cat work/aws.yml
 provider:
   type: AWS
+  nodes: 1
+  machine: t2.large
   region: eu-west-1
   key: ***********************
   secret: *************************************
 
 $ openshifter -d work/aws.yml
 INFO[0000] Creating OpenShift cluster on AWS in eu-west-1  func=Create
+...
+
+$ openshifter -o destroy -d work/aws.yml
+INFO[0000] Destroying OpenShift cluster on AWS in eu-west-1  func=Destroy
+...
 ```

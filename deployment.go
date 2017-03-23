@@ -19,10 +19,12 @@ type Deployment struct {
 // infrastructure provider; not all fields
 // may be defined for all providers
 type Provider struct {
-	Type   string `yaml:"type"`
-	Region string `yaml:"region"`
-	Key    string `yaml:"key"`
-	Secret string `yaml:"secret"`
+	Type    string `yaml:"type"`
+	Nodes   int    `yaml:"nodes"`
+	Machine string `yaml:"machine"`
+	Region  string `yaml:"region"`
+	Key     string `yaml:"key"`
+	Secret  string `yaml:"secret"`
 }
 
 // Load loads a YAML representation of the
@@ -30,16 +32,18 @@ type Provider struct {
 // by the -definition argument.
 func Load() (Deployment, error) {
 	dpl := Deployment{}
+	var raw []byte
 	dpath, _ := filepath.Abs(ddfile)
-	if _, err := os.Stat(dpath); err != nil {
+	_, err := os.Stat(dpath)
+	if err != nil {
 		return dpl, err
 	}
-	if raw, err := ioutil.ReadFile(dpath); err != nil { // can't read from file
+	raw, err = ioutil.ReadFile(dpath)
+	if err != nil { // can't read from file
 		return dpl, err
-	} else {
-		if err := yaml.Unmarshal([]byte(raw), &dpl); err != nil { // can't de-serialize
-			return dpl, err
-		}
+	}
+	if err := yaml.Unmarshal(raw, &dpl); err != nil { // can't de-serialize
+		return dpl, err
 	}
 	return dpl, nil
 }
@@ -48,10 +52,21 @@ func Load() (Deployment, error) {
 // based on the deployment definition.
 func Create(dpl Deployment) {
 	log.WithFields(log.Fields{"func": "Create"}).Info(fmt.Sprintf("Creating OpenShift cluster on %s in %s", dpl.Provider.Type, dpl.Provider.Region))
+	envup(dpl)
+	Provision(dpl)
 }
 
 // Destroy destroys an OpenShift cluster
 // based on the deployment definition.
 func Destroy(dpl Deployment) {
+	log.WithFields(log.Fields{"func": "Destroy"}).Info(fmt.Sprintf("Destroying OpenShift cluster on %s in %s", dpl.Provider.Type, dpl.Provider.Region))
+	envup(dpl)
+	Deprovision(dpl)
+}
 
+func envup(dpl Deployment) {
+	if dpl.Provider.Type == "AWS" {
+		os.Setenv("AWS_ACCESS_KEY_ID", dpl.Provider.Key)
+		os.Setenv("AWS_SECRET_ACCESS_KEY", dpl.Provider.Secret)
+	}
 }
