@@ -11,53 +11,117 @@ import (
 // Deployment defines the top-level structure of the
 // deployment definition file.
 type Deployment struct {
-	Name	string `yaml:"name"`
-	Provider Provider `yaml:"provider"`
+	Name       string `yaml:"name"`
+	Provider   string `yaml:"provider"`
+	Type       string `yaml:"type"`
+	Release    string `yaml:"release"`
+	Installer  string `yaml:"installer"`
+	Dns        DeploymentDns `yaml:"dns"`
+	Ssh        DeploymentSsh `yaml:"ssh"`
+	Nodes      DeploymentNodes `yaml:"nodes"`
+	Components map[string]string `yaml:"components"`
+	Users      []DeploymentUser `yaml:"users"`
+	Execute    []string `yaml:"execute"`
+	Docker     DeploymentDocker `yaml:"docker"`
+	Pvs        DeploymentPvs `yaml:"pvs"`
+	Aws        DeploymentAwsProvider `yaml:"aws"`
+	Gce        DeploymentGceProvider `yaml:"gce"`
 }
 
-// Provider defines properties specific to
-// infrastructure provider; not all fields
-// may be defined for all providers
-type Provider struct {
-	Type    string `yaml:"type"`
-	Nodes   int    `yaml:"nodes"`
-	Machine string `yaml:"machine"`
-	Region  string `yaml:"region"`
+type DeploymentDns struct {
+	Zone	 string `yaml:"zone"`
+	Suffix	 string `yaml:"suffix"`
+}
+
+type DeploymentSsh struct {
+	Key	 string `yaml:"key"`
+}
+
+type DeploymentNodes struct {
+	Type	string `yaml:"type"`
+	Count	int    `yaml:"count"`
+	Infra	bool   `yaml:"infra"`
+	Disks   []DeploymentNodesDisk `yaml:"disks"`
+	Nodes	map[string]DeploymentNodesNode `yaml:"nodes"`
+}
+
+type DeploymentNodesNode struct {
+	Disks   []DeploymentNodesDisk `yaml:"disks"`
+}
+
+type DeploymentNodesDisk struct {
+	Name	string `yaml:"name"`
+	Size	int    `yaml:"size"`
+	Boot	string `yaml:"boot"`
+	Type	string `yaml:"Type"`
+}
+
+type DeploymentUser struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	Sudoer   bool   `yaml:"sudoer"`
+	Admin    bool   `yaml:"admin"`
+	Generic  bool	`yaml:"generic"`
+	Min	 int    `yaml:"min"`
+	Max	 int    `yaml:"max"`
+	Execute  []string `yaml:"execute"`
+}
+
+type DeploymentDocker struct {
+	Prime	 []string `yaml:"prime"`
+}
+
+type DeploymentPvs struct {
+	Type	 string `yaml:"prime"`
+	Count	 int    `yaml:"count"`
+	Size	 int    `yaml:"size"`
+}
+
+type DeploymentAwsProvider struct {
+	Zone	string `yaml:"zone"`
+	Region	string `yaml:"region"`
 	Key     string `yaml:"key"`
 	Secret  string `yaml:"secret"`
+}
+
+type DeploymentGceProvider struct {
+	Zone	string `yaml:"zone"`
+	Region	string `yaml:"region"`
+	Project	string `yaml:"project"`
+	Account	string `yaml:"account"`
 }
 
 // Load loads a YAML representation of the
 // deployment definition from the file provided
 // by the -definition argument.
 func Load(name string) (Deployment, error) {
-	dpl := Deployment{}
+	deployment := Deployment{}
 	var raw []byte
 	dpath, _ := filepath.Abs(name + ".yml")
 	_, err := os.Stat(dpath)
 	if err != nil {
-		return dpl, err
+		return deployment, err
 	}
 	raw, err = ioutil.ReadFile(dpath)
 	if err != nil { // can't read from file
-		return dpl, err
+		return deployment, err
 	}
-	if err := yaml.Unmarshal(raw, &dpl); err != nil { // can't de-serialize
-		return dpl, err
+	if err := yaml.Unmarshal(raw, &deployment); err != nil { // can't de-serialize
+		return deployment, err
 	}
-	log.WithFields(log.Fields{"func": "Load"}).Debug(dpl)
-	if dpl.Name == "" {
-		dpl.Name = name
+	log.WithFields(log.Fields{"func": "Load"}).Debug(deployment)
+	if deployment.Name == "" {
+		deployment.Name = name
 	}
 
-	envup(dpl)
+	envup(deployment)
 
-	return dpl, nil
+	return deployment, nil
 }
 
-func envup(dpl Deployment) {
-	if dpl.Provider.Type == "AWS" {
-		os.Setenv("AWS_ACCESS_KEY_ID", dpl.Provider.Key)
-		os.Setenv("AWS_SECRET_ACCESS_KEY", dpl.Provider.Secret)
+func envup(deployment Deployment) {
+	if deployment.Provider == "AWS" {
+		os.Setenv("AWS_ACCESS_KEY_ID", deployment.Aws.Key)
+		os.Setenv("AWS_SECRET_ACCESS_KEY", deployment.Aws.Secret)
 	}
 }
