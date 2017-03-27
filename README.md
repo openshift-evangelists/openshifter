@@ -5,11 +5,21 @@ A tool to provision and install OpenShift clusters.
 Usage:
 
 ```bash
-Usage: openshifter [args]
+penShifter helps with deploying OpenShift clusters
 
-Arguments:
-  -d, --definition string
-        The file containing the deployment definition. (default "cluster.yml")
+Usage:
+  openshifter [command]
+
+Available Commands:
+  create      Create new OpenShift cluster as defined in [name].yml
+  destroy     Destroy existing OpenShift cluster defined using [name].yml
+  help        Help about any command
+  version     Print the version number of OpenShifter
+
+Flags:
+  -v, --verbose   verbose output
+
+Use "openshifter [command] --help" for more information about a command.
 ```
 
 Example:

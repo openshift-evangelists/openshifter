@@ -1,19 +1,19 @@
 //  AWS region to deploy our cluster
 variable "region" {
   description = "Region to deploy the cluster into"
-  default = "AWS_REGION"
+  default = "{{.Provider.Region}}"
 }
 
 // Machine type
 variable "machine" {
   description = "Machine type to use for the cluster"
-  default = "MACHINE_TYPE"
+  default = "{{.Provider.Machine}}"
 }
 
 // Number of worker nodes
 variable "workernodes" {
   description = "Number of worker nodes to deploy"
-  default = "NUM_WORKER_NODES"
+  default = "{{.Provider.Nodes}}"
 }
 
 // SSH key name

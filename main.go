@@ -1,52 +1,79 @@
 package main
 
 import (
-	"fmt"
 	log "github.com/Sirupsen/logrus"
-	flag "github.com/ogier/pflag"
+	"github.com/spf13/cobra"
+	"fmt"
 	"os"
 )
 
-var (
-	// the operation to carry out:
-	op     string
-	oplist = [...]string{"create", "destroy"}
-	// the deployment definition file:
-	ddfile string
-	// the deployment definition:
-	dpl Deployment
-)
+var RootCmd = &cobra.Command{
+	Use:   "openshifter",
+	Short: "OpenShifter helps with deploying OpenShift clusters",
+	Long: `OpenShifter helps with deploying OpenShift clusters`,
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version number of OpenShifter",
+	Long:  "It's nice to have a version",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("OpenShifter v0.1")
+		os.Exit(0)
+	},
+}
+
+var createCmd = &cobra.Command{
+	Use:   "create [name]",
+	Short: "Create new OpenShift cluster as defined in [name].yml",
+	Run: func(cmd *cobra.Command, args []string) {
+		deployment := loadDeployment(args[0])
+		RenderTemplate(deployment)
+		Provision(deployment)
+	},
+}
+
+var destroyCmd = &cobra.Command{
+	Use:   "destroy [name]",
+	Short: "Destroy existing OpenShift cluster defined using [name].yml",
+	Run: func(cmd *cobra.Command, args []string) {
+		deployment := loadDeployment(args[0])
+		RenderTemplate(deployment)
+		Deprovision(deployment)
+	},
+}
+
+var Verbose bool
 
 func init() {
-	flag.StringVarP(&ddfile, "definition", "d", "cluster.yml", fmt.Sprintf("The file containing the deployment definition."))
-	flag.Usage = func() {
-		fmt.Printf("Usage: openshifter create|destroy [args]\n\n")
-		fmt.Println("Arguments:")
-		flag.PrintDefaults()
-	}
-	flag.Parse()
+	RootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 
-	op = flag.Args()[0]
+	RootCmd.AddCommand(versionCmd)
+	RootCmd.AddCommand(createCmd)
+	RootCmd.AddCommand(destroyCmd)
 
 	if envd := os.Getenv("DEBUG"); envd != "" {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	if d, err := Load(); err != nil {
-		log.WithFields(log.Fields{"func": "init"}).Error(fmt.Sprintf("Can't load deployment definition due to %s", err))
+	if Verbose {
+		log.SetLevel(log.DebugLevel)
+	}
+}
+
+func loadDeployment(name string) Deployment {
+	if d, err := Load(name); err != nil {
+		log.WithFields(log.Fields{"func": "init"}).Error("Can't load deployment definition due to ", err)
 		os.Exit(1)
+		return d
 	} else {
-		dpl = d
+		return d
 	}
 }
 
 func main() {
-	switch op {
-	case "create":
-		Create(dpl)
-	case "destroy":
-		Destroy(dpl)
-	default:
-		log.Error(fmt.Sprintf("%s is an unknown operation", op))
+	if err := RootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
 	}
 }

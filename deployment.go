@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -12,6 +11,7 @@ import (
 // Deployment defines the top-level structure of the
 // deployment definition file.
 type Deployment struct {
+	Name	string `yaml:"name"`
 	Provider Provider `yaml:"provider"`
 }
 
@@ -30,10 +30,10 @@ type Provider struct {
 // Load loads a YAML representation of the
 // deployment definition from the file provided
 // by the -definition argument.
-func Load() (Deployment, error) {
+func Load(name string) (Deployment, error) {
 	dpl := Deployment{}
 	var raw []byte
-	dpath, _ := filepath.Abs(ddfile)
+	dpath, _ := filepath.Abs(name + ".yml")
 	_, err := os.Stat(dpath)
 	if err != nil {
 		return dpl, err
@@ -46,23 +46,13 @@ func Load() (Deployment, error) {
 		return dpl, err
 	}
 	log.WithFields(log.Fields{"func": "Load"}).Debug(dpl)
+	if dpl.Name == "" {
+		dpl.Name = name
+	}
+
+	envup(dpl)
+
 	return dpl, nil
-}
-
-// Create provisions an OpenShift cluster
-// based on the deployment definition.
-func Create(dpl Deployment) {
-	log.WithFields(log.Fields{"func": "Create"}).Info(fmt.Sprintf("Creating OpenShift cluster on %s in %s", dpl.Provider.Type, dpl.Provider.Region))
-	envup(dpl)
-	Provision(dpl)
-}
-
-// Destroy destroys an OpenShift cluster
-// based on the deployment definition.
-func Destroy(dpl Deployment) {
-	log.WithFields(log.Fields{"func": "Destroy"}).Info(fmt.Sprintf("Destroying OpenShift cluster on %s in %s", dpl.Provider.Type, dpl.Provider.Region))
-	envup(dpl)
-	Deprovision(dpl)
 }
 
 func envup(dpl Deployment) {
