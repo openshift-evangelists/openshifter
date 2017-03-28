@@ -102,7 +102,7 @@ type DeploymentGceProvider struct {
 // deployment definition from the file provided
 // by the -definition argument.
 func Load(name string) (Deployment, error) {
-	deployment := Deployment{}
+	deployment := defaults(name)
 	var raw []byte
 	dpath, _ := filepath.Abs(name + ".yml")
 	_, err := os.Stat(dpath)
@@ -124,6 +124,19 @@ func Load(name string) (Deployment, error) {
 	envup(deployment)
 
 	return deployment, nil
+}
+
+func defaults(name string) Deployment {
+	return Deployment{
+		Name: name,
+		Type: "origin",
+		Release: "v1.4.1",
+		Installer: "ansible",
+		Nodes: DeploymentNodes{
+			Count: 0,
+			Infra: false,
+		},
+	}
 }
 
 func envup(deployment Deployment) {

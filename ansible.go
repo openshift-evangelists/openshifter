@@ -3,8 +3,6 @@ package main
 import (
 	log "github.com/Sirupsen/logrus"
 	"os/exec"
-	"regexp"
-	"strings"
 	"os"
 	"text/template"
 	"bufio"
@@ -13,26 +11,9 @@ import (
 )
 
 func InstallUsingAnsible(deployment Deployment) {
-	log.Info("Gathering cluster information")
+	deployment = LoadState(deployment)
 
-	out, err := exec.Command("terraform", "output", "-state=" + deployment.Name + ".data/terraform.tfstate").Output()
-	if err != nil {
-		panic(err)
-	}
-
-	state := string(out)
-	deployment.State = DeploymentState{}
-
-	re := regexp.MustCompile("master = ([0-9.]+)")
-	deployment.State.Master = re.FindStringSubmatch(state)[1]
-
-	re = regexp.MustCompile("infra = ([0-9.]+)")
-	deployment.State.Infra = re.FindStringSubmatch(state)[1]
-
-	re = regexp.MustCompile("nodes = ([0-9.,]+)")
-	deployment.State.Nodes = strings.Split(re.FindStringSubmatch(state)[1], ",")
-
-	err = os.MkdirAll(deployment.Name + ".data", os.ModePerm)
+	err := os.MkdirAll(deployment.Name + ".data", os.ModePerm)
 	if err != nil {
 		panic(err)
 	}

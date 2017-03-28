@@ -9,6 +9,8 @@ import (
 	"io"
 	"github.com/coreos/etcd/pkg/fileutil"
 	"bufio"
+	"regexp"
+	"strings"
 )
 
 // Process deployment and prepare Terraform environment to run the tool against
@@ -82,6 +84,29 @@ func Deprovision(deployment Deployment) {
 	if err != nil {
 		log.WithFields(log.Fields{"func": "Deprovision"}).Error(fmt.Sprintf("Can't run Terraform %s", err))
 	}
+}
+
+func LoadState(deployment Deployment) Deployment {
+	log.Info("Gathering cluster information")
+
+	out, err := exec.Command("terraform", "output", "-state=" + deployment.Name + ".data/terraform.tfstate").Output()
+	if err != nil {
+		panic(err)
+	}
+
+	state := string(out)
+	deployment.State = DeploymentState{}
+
+	re := regexp.MustCompile("master = ([0-9.]+)")
+	deployment.State.Master = re.FindStringSubmatch(state)[1]
+
+	re = regexp.MustCompile("infra = ([0-9.]+)")
+	deployment.State.Infra = re.FindStringSubmatch(state)[1]
+
+	re = regexp.MustCompile("nodes = ([0-9.,]+)")
+	deployment.State.Nodes = strings.Split(re.FindStringSubmatch(state)[1], ",")
+
+	return deployment
 }
 
 func run(cmd ...string) error {

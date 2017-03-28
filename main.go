@@ -30,6 +30,8 @@ var createCmd = &cobra.Command{
 		deployment := loadDeployment(args[0])
 		RenderTemplate(deployment)
 		Provision(deployment)
+		InstallUsingAnsible(deployment)
+		SetupEnvironment(deployment)
 	},
 }
 
@@ -39,6 +41,15 @@ var installCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		deployment := loadDeployment(args[0])
 		InstallUsingAnsible(deployment)
+	},
+}
+
+var setupCmd = &cobra.Command{
+	Use:   "setup [name]",
+	Short: "Sets up installed OpenShift environment",
+	Run: func(cmd *cobra.Command, args []string) {
+		deployment := loadDeployment(args[0])
+		SetupEnvironment(deployment)
 	},
 }
 
@@ -60,6 +71,7 @@ func init() {
 	RootCmd.AddCommand(versionCmd)
 	RootCmd.AddCommand(createCmd)
 	RootCmd.AddCommand(installCmd)
+	RootCmd.AddCommand(setupCmd)
 	RootCmd.AddCommand(destroyCmd)
 
 	if envd := os.Getenv("DEBUG"); envd != "" {
