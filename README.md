@@ -5,7 +5,7 @@ A tool to provision and install OpenShift clusters.
 Usage:
 
 ```bash
-penShifter helps with deploying OpenShift clusters
+OpenShifter helps with deploying OpenShift clusters
 
 Usage:
   openshifter [command]
@@ -14,6 +14,8 @@ Available Commands:
   create      Create new OpenShift cluster as defined in [name].yml
   destroy     Destroy existing OpenShift cluster defined using [name].yml
   help        Help about any command
+  install     Install OpenShift on existing cluster as defined in [name].yml
+  setup       Sets up installed OpenShift environment
   version     Print the version number of OpenShifter
 
 Flags:
@@ -25,20 +27,42 @@ Use "openshifter [command] --help" for more information about a command.
 Example:
 
 ```bash
-$ cat work/aws.yml
-provider:
-  type: AWS
-  nodes: 1
-  machine: t2.large
-  region: eu-west-1
-  key: ***********************
-  secret: *************************************
+$ cat cluster01.yml
+provider: gce
+dns:
+  zone: <zone name>
+  suffix: <domain name>
 
-$ openshifter create -d work/aws.yml
-INFO[0000] Creating OpenShift cluster on AWS in eu-west-1  func=Create
+ssh:
+  key: cluster
+
+users:
+  - username: admin
+    password: password
+    admin: true
+  - username: user
+    password: password
+    sudoer: true
+  - username: user
+    password: password
+    generic: true
+    min: 0
+    max: 3
+
+nodes:
+  count: 1
+  infra: false
+  type: n1-standard-1
+
+gce:
+  account: <json file name>
+  region: us-west1
+  zone: us-west1-a
+  project: <project name/id>
+
+$ openshifter create clutser01
 ...
 
-$ openshifter destroy -d work/aws.yml
-INFO[0000] Destroying OpenShift cluster on AWS in eu-west-1  func=Destroy
+$ openshifter destroy cluster01
 ...
 ```
