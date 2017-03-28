@@ -161,6 +161,7 @@ resource "google_compute_instance" "master" {
     }
     inline = "${var.post_install}"
   }
+
 }
 
 resource "google_compute_disk" "disk_infra_root" {
@@ -282,4 +283,16 @@ resource "google_dns_record_set" "dns_apps" {
   managed_zone = "{{.Dns.Zone}}"
 
   rrdatas = ["{{if .Nodes.Infra}}${google_compute_address.address_infra.address}{{else}}${google_compute_address.address_master.address}{{end}}"]
+}
+
+output "master" {
+  value = "${google_compute_address.address_master.address}"
+}
+
+output "infra" {
+  value = "{{if .Nodes.Infra}}${google_compute_address.address_infra.address}{{else}}${google_compute_address.address_master.address}{{end}}"
+}
+
+output "nodes" {
+  value = "${join(",", google_compute_instance.node.*.network_interface.0.access_config.0.assigned_nat_ip)}"
 }

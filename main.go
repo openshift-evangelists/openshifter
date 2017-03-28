@@ -33,6 +33,15 @@ var createCmd = &cobra.Command{
 	},
 }
 
+var installCmd = &cobra.Command{
+	Use:   "install [name]",
+	Short: "Install OpenShift on existing cluster as defined in [name].yml",
+	Run: func(cmd *cobra.Command, args []string) {
+		deployment := loadDeployment(args[0])
+		InstallUsingAnsible(deployment)
+	},
+}
+
 var destroyCmd = &cobra.Command{
 	Use:   "destroy [name]",
 	Short: "Destroy existing OpenShift cluster defined using [name].yml",
@@ -50,6 +59,7 @@ func init() {
 
 	RootCmd.AddCommand(versionCmd)
 	RootCmd.AddCommand(createCmd)
+	RootCmd.AddCommand(installCmd)
 	RootCmd.AddCommand(destroyCmd)
 
 	if envd := os.Getenv("DEBUG"); envd != "" {
