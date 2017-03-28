@@ -18,8 +18,8 @@ script:
  - mv openshifter_darwin_amd64 openshifter && tar czf openshifter-macos-amd64.tar.gz openshifter && rm openshifter
  - mv openshifter_linux_amd64 openshifter && tar czf openshifter-linux-amd64.tar.gz openshifter && rm openshifter
  - mv openshifter_linux_386 openshifter && tar czf openshifter-linux-386.tar.gz openshifter && rm openshifter
- - mv openshifter_windows_amd64.exe openshifter.exe && tar czf openshifter-windows-amd64.tar.gz openshifter && rm openshifter
- - mv openshifter_windows_386.exe openshifter.exe && tar czf openshifter-windows-386.tar.gz openshifter && rm openshifter
+ - mv openshifter_windows_amd64.exe openshifter.exe && tar czf openshifter-windows-amd64.tar.gz openshifter.exe && rm openshifter.exe
+ - mv openshifter_windows_386.exe openshifter.exe && tar czf openshifter-windows-386.tar.gz openshifter.exe && rm openshifter.exe
 
 deploy:
   provider: releases
