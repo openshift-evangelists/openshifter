@@ -1,0 +1,38 @@
+[OSEv3:children]
+masters
+nodes
+
+[masters]
+{{.State.Master}}{{if not .Nodes.Infra}} openshift_schedulable=true{{end}}
+
+[nodes]
+{{.State.Infra}} openshift_schedulable=true openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+{{range $index, $element := .State.Nodes}}
+{{$element}} openshift_schedulable=true openshift_node_labels="{'region': 'primary', 'zone': 'default'}"
+{{end}}
+
+[OSEv3:vars]
+ansible_user=openshift
+ansible_become=yes
+
+containerized=True
+
+{{if eq .Type "ocp"}}
+deployment_type=openshift-enterprise
+{{else}}
+deployment_type=origin
+{{if not (eq .Release "")}}openshift_release={{.Release}}{{end}}
+{{end}}
+
+{{if .Components.Metrics}}
+openshift_hosted_metrics_deploy=True
+{{end}}
+
+{{if .Components.Logging}}
+openshift_hosted_logging_deploy=True
+{{end}}
+
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+openshift_public_hostname=console.{{.Name}}.{{.Dns.Suffix}}
+openshift_master_default_subdomain=apps.{{.Name}}.{{.Dns.Suffix}}

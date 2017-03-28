@@ -68,10 +68,10 @@ func RenderTemplate(deployment Deployment) {
 // based on the provided deployment, provisioning a cluster.
 func Provision(deployment Deployment) {
 	log.Info("Creating new cluster")
-	err := run("apply", "-state="+deployment.Name + ".data/terraform.tfstate", deployment.Name + ".data")
-	if err != nil {
-		log.WithFields(log.Fields{"func": "Provision"}).Error(fmt.Sprintf("Can't run Terraform %s", err))
-	}
+	//err := run("apply", "-state="+deployment.Name + ".data/terraform.tfstate", deployment.Name + ".data")
+	//if err != nil {
+	//	log.WithFields(log.Fields{"func": "Provision"}).Error(fmt.Sprintf("Can't run Terraform %s", err))
+	//}
 }
 
 // Deprovision executes a Terraform template

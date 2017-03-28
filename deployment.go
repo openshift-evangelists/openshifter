@@ -19,13 +19,20 @@ type Deployment struct {
 	Dns        DeploymentDns `yaml:"dns"`
 	Ssh        DeploymentSsh `yaml:"ssh"`
 	Nodes      DeploymentNodes `yaml:"nodes"`
-	Components map[string]string `yaml:"components"`
+	Components map[string]bool `yaml:"components"`
 	Users      []DeploymentUser `yaml:"users"`
 	Execute    []string `yaml:"execute"`
 	Docker     DeploymentDocker `yaml:"docker"`
 	Pvs        DeploymentPvs `yaml:"pvs"`
 	Aws        DeploymentAwsProvider `yaml:"aws"`
 	Gce        DeploymentGceProvider `yaml:"gce"`
+	State	   DeploymentState `yaml:"-"`
+}
+
+type DeploymentState struct {
+	Master	 string
+	Infra	 string
+	Nodes	 []string
 }
 
 type DeploymentDns struct {
