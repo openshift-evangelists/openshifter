@@ -7,7 +7,6 @@ import (
 	"text/template"
 	"fmt"
 	"io"
-	"github.com/coreos/etcd/pkg/fileutil"
 	"bufio"
 	"regexp"
 	"strings"
@@ -42,14 +41,9 @@ func RenderTemplate(deployment Deployment) {
 		panic(err)
 	}
 
-	if fileutil.Exist("templates/" + deployment.Provider + "_variables.tf") {
-
-		data, err = Asset("templates/" + deployment.Provider + "_variables.tf")
-		if err != nil {
-			panic(err)
-		}
-
-		tmpl, err := template.New("terraform").Parse(string(data))
+	data, err = Asset("templates/" + deployment.Provider + "_variables.tf")
+	if err == nil {
+		tmpl, err = template.New("terraform").Parse(string(data))
 		if err != nil {
 			panic(err)
 		}
