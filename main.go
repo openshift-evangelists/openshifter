@@ -35,6 +35,16 @@ var createCmd = &cobra.Command{
 	},
 }
 
+var provisionCmd = &cobra.Command{
+	Use:   "provision [name]",
+	Short: "Provisions new OpenShift cluster infrastructure as defined in [name].yml",
+	Run: func(cmd *cobra.Command, args []string) {
+		deployment := loadDeployment(args[0])
+		RenderTemplate(deployment)
+		Provision(deployment)
+	},
+}
+
 var installCmd = &cobra.Command{
 	Use:   "install [name]",
 	Short: "Install OpenShift on existing cluster as defined in [name].yml",
@@ -70,6 +80,7 @@ func init() {
 
 	RootCmd.AddCommand(versionCmd)
 	RootCmd.AddCommand(createCmd)
+	RootCmd.AddCommand(provisionCmd)
 	RootCmd.AddCommand(installCmd)
 	RootCmd.AddCommand(setupCmd)
 	RootCmd.AddCommand(destroyCmd)

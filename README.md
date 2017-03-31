@@ -24,9 +24,9 @@ Flags:
 Use "openshifter [command] --help" for more information about a command.
 ```
 
-Example:
+## Definition file 
 
-```bash
+```yaml
 $ cat cluster01.yml
 provider: gce
 dns:
@@ -34,7 +34,7 @@ dns:
   suffix: <domain name>
 
 ssh:
-  key: cluster
+  key: mykey
 
 users:
   - username: admin
@@ -66,3 +66,35 @@ $ openshifter create clutser01
 $ openshifter destroy cluster01
 ...
 ```
+
+## Getting started
+
+Create an empty directory. Add public and private SSH key that will be used to connect to the  provisioned machines. If
+you do not want to reuse existing key, simply generate new one
+
+```
+$ ssh-keygen -f mykey
+```
+
+and you will get two files `mykey` and `mykey.pub`.
+ 
+Create yaml definition for your cluster as defined above and name the file as the cluster should be named, e.g. 
+`cluster01.yml`.
+
+Check the provider documentation for provider-specific files and configuration to add to the definition.
+
+Start the deployment process
+
+```
+$ docker run -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01
+```
+
+## Provider documentation
+
+### GCE
+
+### AWS
+
+### Azure
+
+### DigitalOcean
