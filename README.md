@@ -34,16 +34,17 @@ dns:
   suffix: <domain name>
 
 ssh:
-  key: mykey
+  # Generate SSH key pair: e.g. `ssh-keygen -t rsa -b 4096 -C "me@here.com" -f openshift-key`
+  key: <name of the key pair, e.g., openshift-key>
 
 users:
   - username: admin
     password: password
     admin: true
-  - username: user
+  - username: user1
     password: password
     sudoer: true
-  - username: user
+  - username: user2
     password: password
     generic: true
     min: 0
@@ -52,13 +53,15 @@ users:
 nodes:
   count: 1
   infra: false
+  # See a list of machine types: https://cloud.google.com/compute/docs/machine-types
   type: n1-standard-1
 
 gce:
-  account: <json file name>
+  account: <path to GCP Service Account JSON file>
+  # See a list of regions & zones: https://cloud.google.com/compute/docs/regions-zones/regions-zones
   region: us-west1
   zone: us-west1-a
-  project: <project name/id>
+  project: <GCP Project ID>
 
 $ openshifter create clutser01
 ...
