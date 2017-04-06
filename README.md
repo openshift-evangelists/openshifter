@@ -95,6 +95,10 @@ $ docker run -ti -v (path to your directory):/root/data docker.io/osevg/openshif
 ## Provider documentation
 
 ### GCE
+1. Create a Google Cloud Patlform Project
+1. Enable Compute Engine API
+1. Enable DNS API
+1. Create a new Service Account with Project Owner role, and furnish a new JSON key
 
 ### AWS
 
