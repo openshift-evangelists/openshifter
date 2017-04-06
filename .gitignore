@@ -24,9 +24,8 @@ _testmain.go
 *.prof
 
 .DS_Store
-.idea
 *.iml
-/openshifter
+openshifter
 bindata.go
 /tmp
 openshifter_*

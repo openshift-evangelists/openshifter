@@ -217,6 +217,7 @@ resource "google_compute_instance" "infra" {
 }
 
 resource "google_compute_disk" "disk_node_root" {
+  count = "${var.nodes}"
   name  = "{{.Name}}-node-${count.index}-root"
   type  = "pd-ssd"
   zone  = "{{.Gce.Zone}}"
@@ -224,6 +225,7 @@ resource "google_compute_disk" "disk_node_root" {
 }
 
 resource "google_compute_disk" "disk_node_docker" {
+  count = "${var.nodes}"
   name  = "{{.Name}}-node-${count.index}-docker"
   type  = "pd-ssd"
   zone  = "{{.Gce.Zone}}"
@@ -238,11 +240,11 @@ resource "google_compute_instance" "node" {
   tags         = ["node"]
 
   disk {
-    disk = "${google_compute_disk.disk_node_root.name}"
+    disk = "{{.Name}}-node-${count.index}-root"
   }
 
   disk {
-    disk = "${google_compute_disk.disk_node_docker.name}"
+    disk = "{{.Name}}-node-${count.index}-docker"
   }
 
   metadata {

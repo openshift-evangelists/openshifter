@@ -59,12 +59,6 @@ gce:
   region: us-west1
   zone: us-west1-a
   project: <project name/id>
-
-$ openshifter create clutser01
-...
-
-$ openshifter destroy cluster01
-...
 ```
 
 ## Getting started

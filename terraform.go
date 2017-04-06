@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"text/template"
-	"fmt"
 	"io"
 	"bufio"
 	"regexp"
@@ -66,7 +65,7 @@ func Provision(deployment Deployment) {
 	log.Info("Creating new cluster")
 	err := run("apply", "-state="+deployment.Name + ".data/terraform.tfstate", deployment.Name + ".data")
 	if err != nil {
-		log.WithFields(log.Fields{"func": "Provision"}).Error(fmt.Sprintf("Can't run Terraform %s", err))
+		panic(err)
 	}
 }
 
@@ -76,7 +75,7 @@ func Deprovision(deployment Deployment) {
 	log.Info("Destroying cluster")
 	err := run("destroy", "-force", "-state="+deployment.Name + ".data/terraform.tfstate", deployment.Name + ".data")
 	if err != nil {
-		log.WithFields(log.Fields{"func": "Deprovision"}).Error(fmt.Sprintf("Can't run Terraform %s", err))
+		panic(err)
 	}
 }
 
