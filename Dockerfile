@@ -19,6 +19,8 @@ RUN mv openshifter_linux_amd64 openshifter
 
 WORKDIR /root/data
 
+ENV OPENSHIFT_ANSIBLE="/root/openshift-ansible"
+
 VOLUME ['/root/data']
 
 ENTRYPOINT [ "/root/entrypoint.sh" ]

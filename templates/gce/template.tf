@@ -239,6 +239,8 @@ resource "google_compute_instance" "node" {
   zone         = "{{.Gce.Zone}}"
   tags         = ["node"]
 
+  depends_on = ["google_compute_disk.disk_node_docker", "google_compute_disk.disk_node_root"]
+
   disk {
     disk = "{{.Name}}-node-${count.index}-root"
   }

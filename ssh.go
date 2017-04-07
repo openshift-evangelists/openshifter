@@ -3,6 +3,7 @@ package main
 import (
 	log "github.com/Sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
+	"github.com/pkg/sftp"
 	"io/ioutil"
 )
 
@@ -63,6 +64,27 @@ func ExecuteSsh(name string, command string) ([][]byte, error) {
 		result[i] = data
 	}
 	return result, nil
+}
+
+func UploadSsh(name string, remote string, data []byte) error {
+	for _, connection := range sshConnections[name] {
+		ftp, err := sftp.NewClient(connection.Client)
+		if err != nil {
+			return err
+		}
+
+		defer ftp.Close()
+
+		f, err := ftp.Create(remote)
+		if err != nil {
+			return err
+		}
+
+		if _, err := f.Write(data); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func publicKeyFile(file string) ssh.AuthMethod {

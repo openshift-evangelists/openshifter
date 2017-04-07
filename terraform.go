@@ -20,7 +20,17 @@ func RenderTemplate(deployment Deployment) {
 		panic(err)
 	}
 
-	data, err := Asset("templates/" + deployment.Provider + ".tf")
+	provider := deployment.Provider
+	if deployment.Bastion && !IsBastionNode() {
+		log.Info("Bastion mode")
+		provider = provider + "-bastion"
+	}
+	if deployment.Bastion && IsBastionNode() {
+		log.Info("Bastion mode")
+		provider = provider + "-bastioned"
+	}
+
+	data, err := Asset("templates/" + provider + "/template.tf")
 	if err != nil {
 		panic(err)
 	}
@@ -40,7 +50,7 @@ func RenderTemplate(deployment Deployment) {
 		panic(err)
 	}
 
-	data, err = Asset("templates/" + deployment.Provider + "_variables.tf")
+	data, err = Asset("templates/" + provider + "/variables.tf")
 	if err == nil {
 		tmpl, err = template.New("terraform").Parse(string(data))
 		if err != nil {
@@ -91,13 +101,22 @@ func LoadState(deployment Deployment) Deployment {
 	deployment.State = DeploymentState{}
 
 	re := regexp.MustCompile("master = ([0-9.]+)")
-	deployment.State.Master = re.FindStringSubmatch(state)[1]
+	tmp := re.FindStringSubmatch(state)
+	if tmp != nil {
+		deployment.State.Master = tmp[1]
+	}
 
 	re = regexp.MustCompile("infra = ([0-9.]+)")
-	deployment.State.Infra = re.FindStringSubmatch(state)[1]
+	tmp = re.FindStringSubmatch(state)
+	if tmp != nil {
+		deployment.State.Infra = tmp[1]
+	}
 
 	re = regexp.MustCompile("nodes = ([0-9.,]+)")
-	deployment.State.Nodes = strings.Split(re.FindStringSubmatch(state)[1], ",")
+	tmp = re.FindStringSubmatch(state)
+	if tmp != nil {
+		deployment.State.Nodes = strings.Split(tmp[1], ",")
+	}
 
 	return deployment
 }

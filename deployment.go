@@ -12,6 +12,7 @@ import (
 // deployment definition file.
 type Deployment struct {
 	Name       string `yaml:"name"`
+	Bastion    bool `yaml:"bastion"`
 	Provider   string `yaml:"provider"`
 	Type       string `yaml:"type"`
 	Release    string `yaml:"release"`

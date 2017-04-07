@@ -30,8 +30,12 @@ var createCmd = &cobra.Command{
 		deployment := loadDeployment(args[0])
 		RenderTemplate(deployment)
 		Provision(deployment)
-		InstallUsingAnsible(deployment)
-		SetupEnvironment(deployment)
+		if deployment.Bastion && !IsBastionNode() {
+			BastionSetup(deployment)
+		} else {
+			InstallUsingAnsible(deployment)
+			SetupEnvironment(deployment)
+		}
 	},
 }
 
