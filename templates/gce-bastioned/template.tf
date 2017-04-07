@@ -191,6 +191,53 @@ resource "google_compute_instance" "node" {
   }
 
 }
+resource "google_compute_address" "cluster" {
+  name = "{{.Name}}-cluster"
+}
+
+resource "google_dns_record_set" "dns_master" {
+  name = "console.{{.Name}}.{{.Dns.Suffix}}."
+  type = "A"
+  ttl  = 60
+
+  managed_zone = "{{.Dns.Zone}}"
+
+  rrdatas = ["${google_compute_address.cluster.address}"]
+}
+
+resource "google_dns_record_set" "dns_apps" {
+  name = "*.apps.{{.Name}}.{{.Dns.Suffix}}."
+  type = "A"
+  ttl  = 60
+
+  managed_zone = "{{.Dns.Zone}}"
+
+  rrdatas = ["${google_compute_address.cluster.address}"]
+}
+
+resource "google_compute_firewall" "firewall-master" {
+  name    = "{{.Name}}-master"
+  network = "{{.Name}}"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8443"]
+  }
+
+  target_tags = ["master"]
+}
+
+resource "google_compute_firewall" "firewall-infra" {
+  name    = "{{.Name}}-infra"
+  network = "{{.Name}}"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "443", "30000-32767"]
+  }
+
+  target_tags = ["infra"]
+}
 
 resource "google_compute_target_pool" "masters" {
   name                  = "{{.Name}}-masters"
@@ -200,10 +247,6 @@ resource "google_compute_target_pool" "masters" {
 resource "google_compute_target_pool" "infras" {
   name                  = "{{.Name}}-infras"
   instances             = ["{{if .Nodes.Infra}}${google_compute_instance.infra.self_link}{{else}}${google_compute_instance.master.self_link}{{end}}"]
-}
-
-resource "google_compute_address" "cluster" {
-  name = "{{.Name}}-cluster"
 }
 
 resource "google_compute_forwarding_rule" "masters" {

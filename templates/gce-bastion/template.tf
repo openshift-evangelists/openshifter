@@ -30,7 +30,7 @@ resource "google_compute_firewall" "bastion" {
 
   allow {
     protocol = "tcp"
-    ports    = ["22", "80", "443", "8443", "30000-32767"]
+    ports    = ["22"]
   }
 
   target_tags = ["bastion"]
