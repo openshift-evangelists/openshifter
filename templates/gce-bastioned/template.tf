@@ -192,6 +192,44 @@ resource "google_compute_instance" "node" {
 
 }
 
+resource "google_compute_target_pool" "masters" {
+  name                  = "{{.Name}}-masters"
+  instances             = ["${google_compute_instance.master.self_link}"]
+}
+
+resource "google_compute_target_pool" "infras" {
+  name                  = "{{.Name}}-infras"
+  instances             = ["{{if .Nodes.Infra}}${google_compute_instance.infra.self_link}{{else}}${google_compute_instance.master.self_link}{{end}}"]
+}
+
+resource "google_compute_address" "cluster" {
+  name = "{{.Name}}-cluster"
+}
+
+resource "google_compute_forwarding_rule" "masters" {
+  name                  = "{{.Name}}-masters"
+  load_balancing_scheme = "EXTERNAL"
+  ip_address            = "${google_compute_address.cluster.self_link}"
+  port_range            = "8443"
+  target                = "${google_compute_target_pool.masters.self_link}"
+}
+
+resource "google_compute_forwarding_rule" "infras-http" {
+  name                  = "{{.Name}}-infras-http"
+  load_balancing_scheme = "EXTERNAL"
+  ip_address            = "${google_compute_address.cluster.self_link}"
+  port_range            = "80"
+  target                = "${google_compute_target_pool.infras.self_link}"
+}
+
+resource "google_compute_forwarding_rule" "infras-https" {
+  name                  = "{{.Name}}-infras-https"
+  load_balancing_scheme = "EXTERNAL"
+  ip_address            = "${google_compute_address.cluster.self_link}"
+  port_range            = "443"
+  target                = "${google_compute_target_pool.infras.self_link}"
+}
+
 output "master" {
   value = "${google_compute_instance.master.network_interface.0.address}"
 }
