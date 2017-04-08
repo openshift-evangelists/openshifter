@@ -5,6 +5,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"github.com/pkg/sftp"
 	"io/ioutil"
+	"net"
 )
 
 type SshConnection struct {
@@ -24,6 +25,9 @@ func ConnectSsh(name string, address string, key string) {
 		User: "openshift",
 		Auth: []ssh.AuthMethod{
 			publicKeyFile(key),
+		},
+		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+			return nil
 		},
 	}
 
