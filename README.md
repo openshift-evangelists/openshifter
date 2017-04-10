@@ -33,8 +33,9 @@ dns:
   zone: <zone name>
   suffix: <domain name>
 
+# Generate SSH key pair: e.g. `ssh-keygen -t rsa -b 4096 -C "me@here.com" -f openshift-key`
 ssh:
-  key: mykey
+  key: <name of the key pair, e.g., openshift-key>
 
 users:
   - username: admin
@@ -52,13 +53,14 @@ users:
 nodes:
   count: 1
   infra: false
-  type: n1-standard-1
+  type: n1-standard-1 # See a list of machine types: https://cloud.google.com/compute/docs/machine-types
 
 gce:
   account: <json file name>
+  # See a list of regions & zones: https://cloud.google.com/compute/docs/regions-zones/regions-zones
   region: us-west1
   zone: us-west1-a
-  project: <project name/id>
+  project: <GCP Project ID>
 ```
 
 ## Getting started
@@ -67,7 +69,7 @@ Create an empty directory. Add public and private SSH key that will be used to c
 you do not want to reuse existing key, simply generate new one
 
 ```
-$ ssh-keygen -f mykey
+$ ssh-keygen -f openshift-key
 ```
 
 and you will get two files `mykey` and `mykey.pub`.
@@ -86,6 +88,12 @@ $ docker run -ti -v (path to your directory):/root/data docker.io/osevg/openshif
 ## Provider documentation
 
 ### GCE
+
+1. Create a Google Cloud Patlform Project
+1. Enable Compute Engine API
+1. Enable DNS API
+1. Create Cloud DNS Zone (e.g., openshift-mydomain-com for openshift.mydomain.com suffix)
+1. Create a new Service Account with Project Owner role, and furnish a new JSON key
 
 ### AWS
 
