@@ -116,6 +116,10 @@ func LoadState(deployment Deployment) Deployment {
 	tmp = re.FindStringSubmatch(state)
 	if tmp != nil {
 		deployment.State.Nodes = strings.Split(tmp[1], ",")
+	} else {
+		if deployment.Nodes.Count == 0 {
+			deployment.State.Nodes = []string {}
+		}
 	}
 
 	return deployment

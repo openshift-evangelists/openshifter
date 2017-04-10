@@ -16,6 +16,7 @@ ansible_user=openshift
 ansible_become=yes
 
 containerized=True
+os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 
 {{if eq .Type "ocp"}}
 deployment_type=openshift-enterprise
