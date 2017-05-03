@@ -22,8 +22,9 @@ os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 deployment_type=openshift-enterprise
 {{else}}
 deployment_type=origin
-{{if not (eq .Release "")}}openshift_release={{.Release}}{{end}}
 {{end}}
+
+{{if not (eq .Release "")}}openshift_release={{.Release}}{{end}}
 
 {{if .Components.Metrics}}
 openshift_hosted_metrics_deploy=True
