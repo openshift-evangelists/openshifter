@@ -14,7 +14,7 @@ install:
 - go get github.com/pkg/sftp
 
 script:
- - go-bindata templates
+ - go generate
  - gox -osarch="darwin/amd64 linux/386 linux/amd64 windows/386 windows/amd64"
  - mv openshifter_darwin_amd64 openshifter && tar czf openshifter-macos-amd64.tar.gz openshifter && rm openshifter
  - mv openshifter_linux_amd64 openshifter && tar czf openshifter-linux-amd64.tar.gz openshifter && rm openshifter
