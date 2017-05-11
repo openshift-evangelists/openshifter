@@ -1,24 +1,26 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"os/exec"
-	"os"
-	"text/template"
 	"bufio"
 	"io"
+	"os"
+	"os/exec"
 	"path/filepath"
+	"text/template"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/openshifter/templates"
 )
 
 func InstallUsingAnsible(deployment Deployment) {
 	deployment = LoadState(deployment)
 
-	err := os.MkdirAll(deployment.Name + ".data", os.ModePerm)
+	err := os.MkdirAll(deployment.Name+".data", os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
 
-	data, err := Asset("templates/ansible.tmpl")
+	data, err := templates.Asset("templates/ansible.tmpl")
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +59,7 @@ func runAnsible(deployment Deployment) error {
 	os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
 	os.Setenv("ANSIBLE_PRIVATE_KEY_FILE", key)
 
-	command := exec.Command("ansible-playbook", "-i", deployment.Name + ".data/ansible.ini", path)
+	command := exec.Command("ansible-playbook", "-i", deployment.Name+".data/ansible.ini", path)
 
 	stdoutReader, err := command.StdoutPipe()
 	if err != nil {
@@ -79,7 +81,9 @@ func runAnsible(deployment Deployment) error {
 		for {
 			line, _, err := reader.ReadLine()
 			if err != nil {
-				if err != io.EOF { log.Error("Problem reading stdout ", err) }
+				if err != io.EOF {
+					log.Error("Problem reading stdout ", err)
+				}
 				break
 			}
 			log.WithFields(log.Fields{"source": "Ansible"}).Info(string(line))
@@ -91,7 +95,9 @@ func runAnsible(deployment Deployment) error {
 		for {
 			line, _, err := reader.ReadLine()
 			if err != nil {
-				if err != io.EOF { log.Error("Problem reading stderr ", err) }
+				if err != io.EOF {
+					log.Error("Problem reading stderr ", err)
+				}
 				break
 			}
 			log.WithFields(log.Fields{"source": "Ansible"}).Error(string(line))

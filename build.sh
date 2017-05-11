@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-go-bindata templates/...
+go generate
 go build
 
 gox -osarch="linux/amd64"

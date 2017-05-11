@@ -1,21 +1,23 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
+	"bufio"
+	"io"
 	"os"
 	"os/exec"
-	"text/template"
-	"io"
-	"bufio"
 	"regexp"
 	"strings"
+	"text/template"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/openshifter/templates"
 )
 
 // Process deployment and prepare Terraform environment to run the tool against
 func RenderTemplate(deployment Deployment) {
 	log.Info("Generating Terraform data")
 
-	err := os.MkdirAll(deployment.Name + ".data", os.ModePerm)
+	err := os.MkdirAll(deployment.Name+".data", os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
@@ -30,7 +32,7 @@ func RenderTemplate(deployment Deployment) {
 		provider = provider + "-bastioned"
 	}
 
-	data, err := Asset("templates/" + provider + "/template.tf")
+	data, err := templates.Asset("templates/" + provider + "/template.tf")
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +52,7 @@ func RenderTemplate(deployment Deployment) {
 		panic(err)
 	}
 
-	data, err = Asset("templates/" + provider + "/variables.tf")
+	data, err = templates.Asset("templates/" + provider + "/variables.tf")
 	if err == nil {
 		tmpl, err = template.New("terraform").Parse(string(data))
 		if err != nil {
@@ -73,7 +75,7 @@ func RenderTemplate(deployment Deployment) {
 // based on the provided deployment, provisioning a cluster.
 func Provision(deployment Deployment) {
 	log.Info("Creating new cluster")
-	err := run("apply", "-state="+deployment.Name + ".data/terraform.tfstate", deployment.Name + ".data")
+	err := run("apply", "-state="+deployment.Name+".data/terraform.tfstate", deployment.Name+".data")
 	if err != nil {
 		panic(err)
 	}
@@ -83,7 +85,7 @@ func Provision(deployment Deployment) {
 // based on the provided deployment.
 func Deprovision(deployment Deployment) {
 	log.Info("Destroying cluster")
-	err := run("destroy", "-force", "-state="+deployment.Name + ".data/terraform.tfstate", deployment.Name + ".data")
+	err := run("destroy", "-force", "-state="+deployment.Name+".data/terraform.tfstate", deployment.Name+".data")
 	if err != nil {
 		panic(err)
 	}
@@ -92,7 +94,7 @@ func Deprovision(deployment Deployment) {
 func LoadState(deployment Deployment) Deployment {
 	log.Info("Gathering cluster information")
 
-	out, err := exec.Command("terraform", "output", "-state=" + deployment.Name + ".data/terraform.tfstate").Output()
+	out, err := exec.Command("terraform", "output", "-state="+deployment.Name+".data/terraform.tfstate").Output()
 	if err != nil {
 		panic(err)
 	}
@@ -118,7 +120,7 @@ func LoadState(deployment Deployment) Deployment {
 		deployment.State.Nodes = strings.Split(tmp[1], ",")
 	} else {
 		if deployment.Nodes.Count == 0 {
-			deployment.State.Nodes = []string {}
+			deployment.State.Nodes = []string{}
 		}
 	}
 
@@ -149,7 +151,9 @@ func run(cmd ...string) error {
 		for {
 			line, _, err := reader.ReadLine()
 			if err != nil {
-				if err != io.EOF { log.Error("Problem reading stdout ", err) }
+				if err != io.EOF {
+					log.Error("Problem reading stdout ", err)
+				}
 				break
 			}
 			log.WithFields(log.Fields{"source": "Terraform"}).Info(string(line))
@@ -161,7 +165,9 @@ func run(cmd ...string) error {
 		for {
 			line, _, err := reader.ReadLine()
 			if err != nil {
-				if err != io.EOF { log.Error("Problem reading stderr ", err) }
+				if err != io.EOF {
+					log.Error("Problem reading stderr ", err)
+				}
 				break
 			}
 			log.WithFields(log.Fields{"source": "Terraform"}).Error(string(line))

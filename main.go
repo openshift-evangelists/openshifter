@@ -1,16 +1,19 @@
 package main
 
+//go:generate go run templates-gen/main.go
+
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"fmt"
 	"os"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var RootCmd = &cobra.Command{
 	Use:   "openshifter",
 	Short: "OpenShifter helps with deploying OpenShift clusters",
-	Long: `OpenShifter helps with deploying OpenShift clusters`,
+	Long:  `OpenShifter helps with deploying OpenShift clusters`,
 }
 
 var versionCmd = &cobra.Command{
