@@ -10,7 +10,7 @@ import (
 	"text/template"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/openshifter/templates"
+	"github.com/osevg/openshifter/templates"
 )
 
 // Process deployment and prepare Terraform environment to run the tool against
