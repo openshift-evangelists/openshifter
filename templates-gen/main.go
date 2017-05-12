@@ -25,10 +25,24 @@ import (
 const (
 	templatesDir = "templates/"
 
-	header    = "package templates \n\nimport (\n	\"fmt\"\n	\"path/filepath\"\n	\"strings\"\n)\n//THIS IS A GENERATED FILE - DON'T EDIT\nconst (\n"
+	header = `// Package templates makes the content of the template files
+// (.tmpl|.tf) under the templates/ directory available as strings.
+// Use templates.Asset() to get the content of a template.
+//
+// NOTE: THIS IS A GENERATED FILE - DON'T EDIT
+//
+package templates
+import (
+	"fmt"
+	"path/filepath"
+	"strings"
+)
+
+const (
+`
 	funcAsset = `
 // Asset retrieves the content of the template file at filename as a string.
-// Example: templates.Asset("templates/ansible.tmpl")
+// Example: content, err := templates.Asset("templates/ansible.tmpl")
 func Asset(filename string) (string, error) {
 	if filename == "" {
 		return "", fmt.Errorf("%s", "Can't look up empty template file")
