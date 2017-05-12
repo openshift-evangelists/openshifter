@@ -1,11 +1,12 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"golang.org/x/crypto/ssh"
-	"github.com/pkg/sftp"
 	"io/ioutil"
 	"net"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
 )
 
 type SshConnection struct {
@@ -31,7 +32,7 @@ func ConnectSsh(name string, address string, key string) {
 		},
 	}
 
-	conn, err := ssh.Dial("tcp", address + ":22", sshConfig)
+	conn, err := ssh.Dial("tcp", address+":22", sshConfig)
 	if err != nil {
 		panic(err)
 	}

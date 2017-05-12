@@ -21,21 +21,21 @@ func BastionSetup(deployment Deployment) {
 	if err != nil {
 		panic(err)
 	}
-	UploadSsh("bastion", "bastion/" + file, data)
+	UploadSsh("bastion", "bastion/"+file, data)
 
 	file = deployment.Ssh.Key
 	data, err = ioutil.ReadFile(file)
 	if err != nil {
 		panic(err)
 	}
-	UploadSsh("bastion", "bastion/" + file, data)
+	UploadSsh("bastion", "bastion/"+file, data)
 
 	file = deployment.Ssh.Key + ".pub"
 	data, err = ioutil.ReadFile(file)
 	if err != nil {
 		panic(err)
 	}
-	UploadSsh("bastion", "bastion/" + file, data)
+	UploadSsh("bastion", "bastion/"+file, data)
 
 	if deployment.Provider == "gce" {
 		file = deployment.Gce.Account
@@ -43,7 +43,7 @@ func BastionSetup(deployment Deployment) {
 		if err != nil {
 			panic(err)
 		}
-		UploadSsh("bastion", "bastion/" + file, data)
+		UploadSsh("bastion", "bastion/"+file, data)
 	}
 
 	ExecuteSsh("bastion", "sudo bash -c 'docker run -ti -e BASTION_NODE=true -v `pwd`/bastion:/root/data:Z docker.io/osevg/openshifter:edge create cluster01'")
