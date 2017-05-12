@@ -6,11 +6,11 @@ to the OpenShifter project.
 - [Preparing your development environment](#preparing-your-development-environment)
 - [Building locally](#building-locally)
 - [Contribute](#contribute)
- - [Coding conventions](#coding-conventions)
- - [Testing](#testing)
- - [Handling of templates](#handling-of-templates)
- - [Shipping](#shipping)
- - [CI pipeline](#ci-pipeline)
+  - [Coding conventions](#coding-conventions)
+  - [Testing](#testing)
+  - [Handling of templates](#handling-of-templates)
+  - [Shipping](#shipping)
+  - [CI pipeline](#ci-pipeline)
 
 ## Preparing your development environment
 
@@ -29,9 +29,9 @@ You will need the following to build and execute OpenShifter locally:
 $ go get github.com/osevg/openshifter
 # to populate the templates (more details below):
 $ go generate
-# to build the `openshifter` binary, making it available in $GOPATH/bin/
+# to build the `openshifter` binary, making it available in $GOPATH/bin/:
 $ go install
-# now you can execute it:
+# now you can execute the `openshifter` binary:
 $ openshifter
 OpenShifter helps with deploying OpenShift clusters
 
@@ -55,7 +55,7 @@ Use "openshifter [command] --help" for more information about a command.
 ## Contribute
 
 If you want to contribute to OpenShifter, make sure that first you create your
-own fork of [osevg/openshifter](https://github.com/osevg/openshifter).
+[own fork](https://help.github.com/articles/fork-a-repo/) of [osevg/openshifter](https://github.com/osevg/openshifter).
 
 In the following we walk you through how to set up your environment in order to
 contribute to OpenShifter.
@@ -69,7 +69,8 @@ the following tools in order to ensure uniformity and code quality:
 The Go Meta Linter [alecthomas/gometalinter](https://github.com/alecthomas/gometalinter) with
 the following parameters:
 
-```--vendor, --disable-all, --enable=vet, --enable=vetshadow, --enable=golint, --enable=ineffassign, --enable=goconst, --enable=errcheck, --tests, --json, .
+```
+--vendor, --disable-all, --enable=vet, --enable=vetshadow, --enable=golint, --enable=ineffassign, --enable=goconst, --enable=errcheck, --tests, --json, .
 ```
 
 The [goimports](https://godoc.org/golang.org/x/tools/cmd/goimports) tool.
@@ -77,8 +78,13 @@ The [goimports](https://godoc.org/golang.org/x/tools/cmd/goimports) tool.
 ### Testing
 
 Whenever you edit an existing `.go` source file or add a new one, either on save
-in your editor or IDE (preferred) or manually on the CLI, make sure that you run
-`go test -coverprofile -short` to execute the tests and display test coverage.
+in your editor or IDE (preferred) or manually on the CLI, make sure that you run:
+
+```
+go test -coverprofile -short
+```
+
+This above command executes the tests and displays test coverage.
 We aim for a [test coverage](https://blog.golang.org/cover) of over 50%.
 
 ### Handling of templates
@@ -94,7 +100,7 @@ For this, we're using [go generate](https://blog.golang.org/generate):
 - The `go generate` command will execute [templates-gen/main.go](templates-gen/main.go) which in turn will generate `templates/templates.go`
 - In the generated file `templates/templates.go` you find the function `templates.Asset()` that you use to load the content of the respective template file
 
-Note: `templates/templates.go` is not checked into Git and at least,
+Note: `templates/templates.go` is not checked into Git and *at least*
 whenever you change or add any template you need to run `go generate`
 in the repo root directory to generate the templates.
 
