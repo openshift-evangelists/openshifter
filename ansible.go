@@ -9,7 +9,7 @@ import (
 	"text/template"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/osevg/openshifter/templates"
+	"github.com/openshift-evangelists/openshifter/templates"
 )
 
 func InstallUsingAnsible(deployment Deployment) {
