@@ -1,102 +1,103 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	log "github.com/Sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
 // Deployment defines the top-level structure of the
 // deployment definition file.
 type Deployment struct {
-	Name       string `yaml:"name"`
-	Bastion    bool `yaml:"bastion"`
-	Provider   string `yaml:"provider"`
-	Type       string `yaml:"type"`
-	Release    string `yaml:"release"`
-	Installer  string `yaml:"installer"`
-	Dns        DeploymentDns `yaml:"dns"`
-	Ssh        DeploymentSsh `yaml:"ssh"`
-	Nodes      DeploymentNodes `yaml:"nodes"`
-	Components map[string]bool `yaml:"components"`
-	Users      []DeploymentUser `yaml:"users"`
-	Execute    []string `yaml:"execute"`
-	Docker     DeploymentDocker `yaml:"docker"`
-	Pvs        DeploymentPvs `yaml:"pvs"`
+	Name       string                `yaml:"name"`
+	Bastion    bool                  `yaml:"bastion"`
+	Provider   string                `yaml:"provider"`
+	Type       string                `yaml:"type"`
+	Release    string                `yaml:"release"`
+	Installer  string                `yaml:"installer"`
+	Dns        DeploymentDns         `yaml:"dns"`
+	Ssh        DeploymentSsh         `yaml:"ssh"`
+	Nodes      DeploymentNodes       `yaml:"nodes"`
+	Components map[string]bool       `yaml:"components"`
+	Users      []DeploymentUser      `yaml:"users"`
+	Execute    []string              `yaml:"execute"`
+	Docker     DeploymentDocker      `yaml:"docker"`
+	Pvs        DeploymentPvs         `yaml:"pvs"`
 	Aws        DeploymentAwsProvider `yaml:"aws"`
 	Gce        DeploymentGceProvider `yaml:"gce"`
-	State	   DeploymentState `yaml:"-"`
+	State      DeploymentState       `yaml:"-"`
 }
 
 type DeploymentState struct {
-	Master	 string
-	Infra	 string
-	Nodes	 []string
+	Master string
+	Infra  string
+	Nodes  []string
 }
 
 type DeploymentDns struct {
-	Zone	 string `yaml:"zone"`
-	Suffix	 string `yaml:"suffix"`
+	Zone   string `yaml:"zone"`
+	Suffix string `yaml:"suffix"`
 }
 
 type DeploymentSsh struct {
-	Key	 string `yaml:"key"`
+	Key string `yaml:"key"`
 }
 
 type DeploymentNodes struct {
-	Type	string `yaml:"type"`
-	Count	int    `yaml:"count"`
-	Infra	bool   `yaml:"infra"`
-	Disks   []DeploymentNodesDisk `yaml:"disks"`
-	Nodes	map[string]DeploymentNodesNode `yaml:"nodes"`
+	Type  string                         `yaml:"type"`
+	Count int                            `yaml:"count"`
+	Infra bool                           `yaml:"infra"`
+	Disks []DeploymentNodesDisk          `yaml:"disks"`
+	Nodes map[string]DeploymentNodesNode `yaml:"nodes"`
 }
 
 type DeploymentNodesNode struct {
-	Disks   []DeploymentNodesDisk `yaml:"disks"`
+	Disks []DeploymentNodesDisk `yaml:"disks"`
 }
 
 type DeploymentNodesDisk struct {
-	Name	string `yaml:"name"`
-	Size	int    `yaml:"size"`
-	Boot	string `yaml:"boot"`
-	Type	string `yaml:"Type"`
+	Name string `yaml:"name"`
+	Size int    `yaml:"size"`
+	Boot string `yaml:"boot"`
+	Type string `yaml:"Type"`
 }
 
 type DeploymentUser struct {
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	Sudoer   bool   `yaml:"sudoer"`
-	Admin    bool   `yaml:"admin"`
-	Generic  bool	`yaml:"generic"`
-	Min	 int    `yaml:"min"`
-	Max	 int    `yaml:"max"`
+	Username string   `yaml:"username"`
+	Password string   `yaml:"password"`
+	Sudoer   bool     `yaml:"sudoer"`
+	Admin    bool     `yaml:"admin"`
+	Generic  bool     `yaml:"generic"`
+	Min      int      `yaml:"min"`
+	Max      int      `yaml:"max"`
 	Execute  []string `yaml:"execute"`
 }
 
 type DeploymentDocker struct {
-	Prime	 []string `yaml:"prime"`
+	Prime []string `yaml:"prime"`
 }
 
 type DeploymentPvs struct {
-	Type	 string `yaml:"prime"`
-	Count	 int    `yaml:"count"`
-	Size	 int    `yaml:"size"`
+	Type  string `yaml:"prime"`
+	Count int    `yaml:"count"`
+	Size  int    `yaml:"size"`
 }
 
 type DeploymentAwsProvider struct {
-	Zone	string `yaml:"zone"`
-	Region	string `yaml:"region"`
-	Key     string `yaml:"key"`
-	Secret  string `yaml:"secret"`
+	Zone   string `yaml:"zone"`
+	Region string `yaml:"region"`
+	Key    string `yaml:"key"`
+	Secret string `yaml:"secret"`
 }
 
 type DeploymentGceProvider struct {
-	Zone	string `yaml:"zone"`
-	Region	string `yaml:"region"`
-	Project	string `yaml:"project"`
-	Account	string `yaml:"account"`
+	Zone    string `yaml:"zone"`
+	Region  string `yaml:"region"`
+	Project string `yaml:"project"`
+	Account string `yaml:"account"`
 }
 
 // Load loads a YAML representation of the
@@ -129,9 +130,9 @@ func Load(name string) (Deployment, error) {
 
 func defaults(name string) Deployment {
 	return Deployment{
-		Name: name,
-		Type: "origin",
-		Release: "v1.4.1",
+		Name:      name,
+		Type:      "origin",
+		Release:   "v1.5.1",
 		Installer: "ansible",
 		Nodes: DeploymentNodes{
 			Count: 0,

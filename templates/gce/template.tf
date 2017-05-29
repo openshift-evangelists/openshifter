@@ -27,7 +27,7 @@ variable "post_install" {
   type = "list"
   default = [
     "sudo bash -c 'yum -y update'",
-    "sudo bash -c 'yum install -y docker'",
+    "sudo bash -c 'yum install -y docker java-1.8.0-openjdk'",
     "sudo bash -c 'echo DEVS=/dev/sdb >> /etc/sysconfig/docker-storage-setup'",
     "sudo bash -c 'echo VG=DOCKER >> /etc/sysconfig/docker-storage-setup'",
     "sudo bash -c 'systemctl stop docker'",

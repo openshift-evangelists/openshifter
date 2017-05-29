@@ -26,12 +26,13 @@ deployment_type=origin
 
 {{if not (eq .Release "")}}openshift_release={{.Release}}{{end}}
 
-{{if .Components.Metrics}}
+{{if .Components.metrics}}
 openshift_hosted_metrics_deploy=True
 {{end}}
 
-{{if .Components.Logging}}
+{{if .Components.logging}}
 openshift_hosted_logging_deploy=True
+{{if not (eq .Release "")}}openshift_logging_image_version={{.Release}}{{end}}
 {{end}}
 
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
