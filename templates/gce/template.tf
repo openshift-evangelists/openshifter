@@ -1,3 +1,8 @@
+variable "size" {
+  type = "string"
+  default = "{{.Nodes.Size}}"
+}
+
 variable "account" {
   type = "string"
   default = "{{.Gce.Account}}"
@@ -124,7 +129,7 @@ resource "google_compute_disk" "disk_master_docker" {
   name  = "{{.Name}}-master-docker"
   type  = "pd-ssd"
   zone  = "{{.Gce.Zone}}"
-  size  = "100"
+  size  = "{{.Nodes.Size}}"
 }
 
 resource "google_compute_instance" "master" {
@@ -177,7 +182,7 @@ resource "google_compute_disk" "disk_infra_docker" {
   name  = "{{.Name}}-infra-docker"
   type  = "pd-ssd"
   zone  = "{{.Gce.Zone}}"
-  size  = "100"
+  size  = "{{.Nodes.Size}}"
 }
 
 resource "google_compute_instance" "infra" {
@@ -229,7 +234,7 @@ resource "google_compute_disk" "disk_node_docker" {
   name  = "{{.Name}}-node-${count.index}-docker"
   type  = "pd-ssd"
   zone  = "{{.Gce.Zone}}"
-  size  = "100"
+  size  = "{{.Nodes.Size}}"
 }
 
 resource "google_compute_instance" "node" {
