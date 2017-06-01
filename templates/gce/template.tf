@@ -124,7 +124,7 @@ resource "google_compute_disk" "disk_master_docker" {
   name  = "{{.Name}}-master-docker"
   type  = "pd-ssd"
   zone  = "{{.Gce.Zone}}"
-  size  = "100"
+  size  = "{{.Nodes.Disk.Size}}"
 }
 
 resource "google_compute_instance" "master" {
@@ -177,7 +177,7 @@ resource "google_compute_disk" "disk_infra_docker" {
   name  = "{{.Name}}-infra-docker"
   type  = "pd-ssd"
   zone  = "{{.Gce.Zone}}"
-  size  = "100"
+  size  = "{{.Nodes.Disk.Size}}"
 }
 
 resource "google_compute_instance" "infra" {
@@ -229,7 +229,7 @@ resource "google_compute_disk" "disk_node_docker" {
   name  = "{{.Name}}-node-${count.index}-docker"
   type  = "pd-ssd"
   zone  = "{{.Gce.Zone}}"
-  size  = "100"
+  size  = "{{.Nodes.Disk.Size}}"
 }
 
 resource "google_compute_instance" "node" {
@@ -269,6 +269,7 @@ resource "google_compute_instance" "node" {
 
 }
 
+{{if ne .Dns.Zone "nip"}}
 resource "google_dns_record_set" "dns_master" {
   name = "console.{{.Name}}.{{.Dns.Suffix}}."
   type = "A"
@@ -288,6 +289,7 @@ resource "google_dns_record_set" "dns_apps" {
 
   rrdatas = ["{{if .Nodes.Infra}}${google_compute_address.address_infra.address}{{else}}${google_compute_address.address_master.address}{{end}}"]
 }
+{{end}}
 
 output "master" {
   value = "${google_compute_address.address_master.address}"

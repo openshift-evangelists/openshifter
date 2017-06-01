@@ -15,6 +15,9 @@ nodes
 ansible_user=openshift
 ansible_become=yes
 
+enable_excluders=false
+enable_docker_excluder=false
+
 containerized=True
 os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 
@@ -37,5 +40,10 @@ openshift_hosted_logging_deploy=True
 
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
 
+{{if eq .Dns.Zone "nip"}}
+openshift_public_hostname=console.{{.State.Infra}}.nip.io
+openshift_master_default_subdomain=apps.{{.State.Infra}}.nip.io
+{{else}}
 openshift_public_hostname=console.{{.Name}}.{{.Dns.Suffix}}
 openshift_master_default_subdomain=apps.{{.Name}}.{{.Dns.Suffix}}
+{{end}}

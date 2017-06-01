@@ -1,8 +1,10 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"path/filepath"
+	"strconv"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 func SetupEnvironment(deployment Deployment) {
@@ -19,9 +21,17 @@ func SetupEnvironment(deployment Deployment) {
 
 	ConnectSsh("master", deployment.State.Master, key)
 
+	if deployment.Components["logging"] {
+		log.Info("Restarting master to provide logging integration in web console")
+		_, err := ExecuteSsh("master", "sudo bash -c 'systemctl restart origin-master'")
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	if deployment.Components["runAsRoot"] {
 		log.Info("Allowing the usage of 'root' containers")
-		_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc adm policy analyze-scc-to-group anyuid system:authenticated'")
+		_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc adm policy add-scc-to-group anyuid system:authenticated'")
 		if err != nil {
 			panic(err)
 		}
@@ -34,7 +44,7 @@ func SetupEnvironment(deployment Deployment) {
 		panic(err)
 	}
 
-	_, err = ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc adm policy analyze-cluster-role-to-user cluster-admin system:serviceaccount:default:robot'")
+	_, err = ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:default:robot'")
 	if err != nil {
 		panic(err)
 	}
@@ -47,7 +57,7 @@ func SetupEnvironment(deployment Deployment) {
 
 	for _, cmd := range deployment.Execute {
 		log.Info("Command ", cmd)
-		_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc " + cmd + "'")
+		_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc "+cmd+"'")
 		if err != nil {
 			panic(err)
 		}
@@ -63,12 +73,12 @@ func setupUsers(deployment Deployment) {
 
 		if u.Generic {
 			for i := u.Min; i <= u.Max; i++ {
-				username := u.Username + string(i)
-				password := u.Password + string(i)
+				username := u.Username + strconv.Itoa(i)
+				password := u.Password + strconv.Itoa(i)
 
 				log.Info("Generic user ", username)
 
-				_, err := ExecuteSsh("master", "sudo bash -c 'htpasswd -b /etc/origin/master/htpasswd " + username + " " + password + "'")
+				_, err := ExecuteSsh("master", "sudo bash -c 'htpasswd -b /etc/origin/master/htpasswd "+username+" "+password+"'")
 				if err != nil {
 					panic(err)
 				}
@@ -77,14 +87,14 @@ func setupUsers(deployment Deployment) {
 
 			}
 		} else {
-			_, err := ExecuteSsh("master", "sudo bash -c 'htpasswd -b /etc/origin/master/htpasswd " + u.Username + " " + u.Password + "'")
+			_, err := ExecuteSsh("master", "sudo bash -c 'htpasswd -b /etc/origin/master/htpasswd "+u.Username+" "+u.Password+"'")
 			if err != nil {
 				panic(err)
 			}
 
 			if u.Admin {
 				log.Info("Making user omnipotent")
-				_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc adm policy add-cluster-role-to-user cluster-admin " + u.Username + "'")
+				_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc adm policy add-cluster-role-to-user cluster-admin "+u.Username+"'")
 				if err != nil {
 					panic(err)
 				}
@@ -92,7 +102,7 @@ func setupUsers(deployment Deployment) {
 
 			if u.Sudoer {
 				log.Info("Making user sudoer")
-				_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc adm policy add-cluster-role-to-user sudoer " + u.Username + "'")
+				_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc adm policy add-cluster-role-to-user sudoer "+u.Username+"'")
 				if err != nil {
 					panic(err)
 				}
@@ -106,12 +116,12 @@ func setupUsers(deployment Deployment) {
 func executeIn(namespace string, cmds []string) {
 	log.Info("Creating user project")
 
-	_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc new-project " + namespace + "'")
+	_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc new-project "+namespace+"'")
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc adm policy add-role-to-user admin  " + namespace + " -n " + namespace + "'")
+	_, err = ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc adm policy add-role-to-user admin  "+namespace+" -n "+namespace+"'")
 	if err != nil {
 		panic(err)
 	}
@@ -119,7 +129,7 @@ func executeIn(namespace string, cmds []string) {
 	for _, cmd := range cmds {
 		log.Info("Executing for user ", cmd)
 
-		_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc " + cmd + " -n " + namespace + "'")
+		_, err := ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc "+cmd+" -n "+namespace+"'")
 		if err != nil {
 			panic(err)
 		}

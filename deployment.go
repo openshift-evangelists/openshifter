@@ -49,9 +49,14 @@ type DeploymentSsh struct {
 type DeploymentNodes struct {
 	Type  string                         `yaml:"type"`
 	Count int                            `yaml:"count"`
+	Disk  DeploymentNodesDiskDefault     `yaml:"disk"`
 	Infra bool                           `yaml:"infra"`
 	Disks []DeploymentNodesDisk          `yaml:"disks"`
 	Nodes map[string]DeploymentNodesNode `yaml:"nodes"`
+}
+
+type DeploymentNodesDiskDefault struct {
+	Size int `yaml:"size"`
 }
 
 type DeploymentNodesNode struct {
@@ -137,6 +142,9 @@ func defaults(name string) Deployment {
 		Nodes: DeploymentNodes{
 			Count: 0,
 			Infra: false,
+			Disk: DeploymentNodesDiskDefault{
+				Size: 100,
+			},
 		},
 	}
 }
