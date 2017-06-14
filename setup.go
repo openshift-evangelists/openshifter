@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"path/filepath"
-	"strconv"
+	"text/template"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -10,9 +12,6 @@ import (
 func SetupEnvironment(deployment Deployment) {
 	// toDo https://github.com/marekjelen/openshifter/blob/master/openshifter/src/main/java/eu/mjelen/openshifter/task/openshift/OpenShiftMaster.java
 	// toDo https://github.com/marekjelen/openshifter/blob/master/openshifter/src/main/java/eu/mjelen/openshifter/task/component/NodePorts.java
-	// toDo https://github.com/marekjelen/openshifter/blob/master/openshifter/src/main/java/eu/mjelen/openshifter/task/component/PersistentVolumes.java
-	// todo https://github.com/marekjelen/openshifter/blob/master/openshifter/src/main/java/eu/mjelen/openshifter/task/component/Cockpit.java
-
 	// todo https://github.com/marekjelen/openshifter/blob/master/openshifter/src/main/java/eu/mjelen/openshifter/task/installer/OcuTask.java
 
 	deployment = LoadState(deployment)
@@ -63,6 +62,78 @@ func SetupEnvironment(deployment Deployment) {
 		}
 	}
 
+	if deployment.Components["pvs"] {
+		log.Info("Setting up PVs")
+
+		data, err := Asset("templates/pvs.yml")
+		if err != nil {
+			panic(err)
+		}
+		tmpl, err := template.New("pvs").Parse(string(data))
+		if err != nil {
+			panic(err)
+		}
+		for i := 1; i <= deployment.Pvs.Count; i++ {
+			var doc bytes.Buffer
+			var env = make(map[string]interface{})
+			var name = "pv-" + fmt.Sprintf("%d", i)
+			env["name"] = name
+			env["size"] = deployment.Pvs.Size
+			err = tmpl.Execute(&doc, env)
+			if err != nil {
+				panic(err)
+			}
+			UploadSsh("master", "pv.yml", doc.Bytes())
+			_, err = ExecuteSsh("master", "sudo bash -c 'mkdir -p /pvs/"+name+"'")
+			if err != nil {
+				panic(err)
+			}
+			_, err = ExecuteSsh("master", "sudo bash -c 'chmod 777 /pvs/"+name+"'")
+			if err != nil {
+				panic(err)
+			}
+			_, err = ExecuteSsh("master", "sudo bash -c 'restorecon /pvs/"+name+"'")
+			if err != nil {
+				panic(err)
+			}
+			_, err = ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc create -f pv.yml'")
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		if deployment.Gce.ServiceAccount != "" {
+			data, err := Asset("templates/gce.pvs.yml")
+			if err != nil {
+				panic(err)
+			}
+			tmpl, err := template.New("ansible").Parse(string(data))
+			if err != nil {
+				panic(err)
+			}
+			var doc bytes.Buffer
+			tmpl.Execute(&doc, deployment)
+			UploadSsh("master", "disks.yml", doc.Bytes())
+			_, err = ExecuteSsh("master", "sudo bash -c '/usr/local/bin/oc create -f disks.yml'")
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+
+	for _, img := range deployment.Docker.Prime {
+		_, err = ExecuteSsh("*", "sudo bash -c 'docker pull "+img+"'")
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	for _, exec := range deployment.Execute {
+		_, err = ExecuteSsh("master", exec)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func setupUsers(deployment Deployment) {
@@ -73,8 +144,8 @@ func setupUsers(deployment Deployment) {
 
 		if u.Generic {
 			for i := u.Min; i <= u.Max; i++ {
-				username := u.Username + strconv.Itoa(i)
-				password := u.Password + strconv.Itoa(i)
+				username := u.Username + fmt.Sprintf("%d", i)
+				password := u.Password + fmt.Sprintf("%d", i)
 
 				log.Info("Generic user ", username)
 

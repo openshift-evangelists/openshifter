@@ -24,36 +24,64 @@ Flags:
 Use "openshifter [command] --help" for more information about a command.
 ```
 
-## Definition file 
+## Definition file
 
 ```yaml
 $ cat cluster01.yml
+name: cluster-name # file base name wihtou .yml if not specified
+bastion: false # Bationed deployment, WIP, do not use
 provider: gce
+type: origin # origin or ocp
+release: v1.5.1 # full version for Origin; for OCP master.minor is enough
+installer: ansible # currently only Ansible
+
 dns:
-  zone: <zone name>
-  suffix: <domain name>
+  zone: <zone name> # zone name depends on provider; if set to "nip" will use nip.io
+  suffix: <domain name> # DNS to access cluster (console, *.apps).cluster-name.suffix
 
 # Generate SSH key pair: e.g. `ssh-keygen -t rsa -b 4096 -C "me@here.com" -f openshift-key`
 ssh:
   key: <name of the key pair, e.g., openshift-key>
 
-users:
+components:
+  cockpit: false # if true, deploys Cockpit
+  metrics: false # if true, deploys Metrics
+  logging: false # if true, deploys Logging
+  pvs: false # enables PersistentVolumes
+
+users: # creates user and associated project named as the user
   - username: admin
     password: password
-    admin: true
+    admin: true # cluster-admin role
   - username: user
     password: password
     sudoer: true
+    execute:
+      - new-app mjelen/example # execute in the context of user project
   - username: user
     password: password
-    generic: true
+    generic: true # generates user0 up to user3 with password0 up to password3
     min: 0
     max: 3
 
+pvs: # PVs always use hostPath
+  type: '' # if set to "gluster" will deploy gluster node and setup the hostPath into Gluster backed directory
+  size: 1 # Size of the generated PVs in GB
+  count: 1 # Generate 1 PV
+
 nodes:
-  count: 1
-  infra: false
+  count: 1 # container nodes in the cluster
+  infra: false # separate master and infra
   type: n1-standard-1 # See a list of machine types: https://cloud.google.com/compute/docs/machine-types
+  disk:
+    size: 100 # The docker storage disk in GB
+
+execute:
+  - oc new-app mjelen/example # execute commands on master node
+
+docker:
+  prime: # pre-pull images on all container nodes
+    - mjelen/example
 
 gce:
   account: <json file name>
@@ -61,6 +89,7 @@ gce:
   region: us-west1
   zone: us-west1-a
   project: <GCP Project ID>
+  serviceaccount: <secvice account e-mail> # associate the SA with the VM
 ```
 
 ## Getting started
@@ -73,8 +102,8 @@ $ ssh-keygen -f openshift-key
 ```
 
 and you will get two files `mykey` and `mykey.pub`.
- 
-Create yaml definition for your cluster as defined above and name the file as the cluster should be named, e.g. 
+
+Create yaml definition for your cluster as defined above and name the file as the cluster should be named, e.g.
 `cluster01.yml`.
 
 Check the provider documentation for provider-specific files and configuration to add to the definition.

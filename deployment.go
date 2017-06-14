@@ -86,7 +86,7 @@ type DeploymentDocker struct {
 }
 
 type DeploymentPvs struct {
-	Type  string `yaml:"prime"`
+	Type  string `yaml:"type"`
 	Count int    `yaml:"count"`
 	Size  int    `yaml:"size"`
 }
@@ -99,10 +99,11 @@ type DeploymentAwsProvider struct {
 }
 
 type DeploymentGceProvider struct {
-	Zone    string `yaml:"zone"`
-	Region  string `yaml:"region"`
-	Project string `yaml:"project"`
-	Account string `yaml:"account"`
+	Zone           string `yaml:"zone"`
+	Region         string `yaml:"region"`
+	Project        string `yaml:"project"`
+	Account        string `yaml:"account"`
+	ServiceAccount string `yaml:"serviceaccount"`
 }
 
 // Load loads a YAML representation of the

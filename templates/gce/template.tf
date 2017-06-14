@@ -27,14 +27,50 @@ variable "post_install" {
   type = "list"
   default = [
     "sudo bash -c 'yum -y update'",
-    "sudo bash -c 'yum install -y docker java-1.8.0-openjdk'",
+    "sudo bash -c 'yum install -y docker'",
     "sudo bash -c 'echo DEVS=/dev/sdb >> /etc/sysconfig/docker-storage-setup'",
     "sudo bash -c 'echo VG=DOCKER >> /etc/sysconfig/docker-storage-setup'",
+    "sudo bash -c 'echo SETUP_LVM_THIN_POOL=yes >> /etc/sysconfig/docker-storage-setup'",
+    "sudo bash -c 'echo DATA_SIZE=\"70%FREE\" >> /etc/sysconfig/docker-storage-setup'",
     "sudo bash -c 'systemctl stop docker'",
     "sudo bash -c 'rm -rf /var/lib/docker'",
     "sudo bash -c 'wipefs --all /dev/sdb'",
     "sudo bash -c 'docker-storage-setup'",
-    "sudo bash -c 'systemctl start docker'"
+    "sudo bash -c 'systemctl start docker'",
+    "sudo bash -c 'lvcreate -l 100%FREE -n PVS DOCKER'",
+    "sudo bash -c 'mkfs.xfs /dev/mapper/DOCKER-PVS'",
+    "sudo bash -c 'mkdir -p /var/lib/origin/openshift.local.volumes'",
+    "sudo bash -c 'mount /dev/mapper/DOCKER-PVS /var/lib/origin/openshift.local.volumes'",
+    "sudo bash -c 'echo \"/dev/mapper/DOCKER-PVS /var/lib/origin/openshift.local.volumes xfs defaults 0 1\" >> /etc/fstab'",
+    "sudo bash -c 'mkdir -p /pvs'",
+    {{if .Components.pvs and eq .Pvs.Type "gluster"}}
+    "sudo bash -c 'yum install -y centos-release-gluster310'",
+    "sudo bash -c 'yum install -y glusterfs gluster-cli glusterfs-libs glusterfs-fuse'",
+    "sudo bash -c 'mount -t glusterfs {{.Name}}-pvs:/pvs /pvs'",
+    {{if .Components.pvs}}
+  ]
+}
+
+variable "pvs_install" {
+  type = "list"
+  default = [
+    "sudo bash -c ''",
+    "sudo bash -c 'yum -y update'",
+    "sudo bash -c 'yum install -y centos-release-gluster310'",
+    "sudo bash -c 'yum install -y glusterfs gluster-cli glusterfs-libs glusterfs-server'",
+    "sudo bash -c 'pvcreate /dev/sdb'",
+    "sudo bash -c 'vgcreate PVS /dev/sdb'",
+    "sudo bash -c 'lvcreate -l 100%FREE -n PVS PVS'",
+    "sudo bash -c 'mkfs.xfs -i size=512 /dev/mapper/PVS-PVS'",
+    "sudo bash -c 'mkdir -p /data/brick1'",
+    "sudo bash -c 'echo \"/dev/mapper/PVS-PVS /data/brick1 xfs defaults 1 2\" >> /etc/fstab'",
+    "sudo bash -c 'mount -a && mount'",
+    "sudo bash -c 'systemctl start glusterd'",
+    "sudo bash -c 'systemctl enable glusterd'",
+    "sudo bash -c 'mkdir -p /data/brick1/pvs'",
+    "sudo bash -c 'gluster volume create pvs {{.Name}}-pvs:/data/brick1/pvs'",
+    "sudo bash -c 'gluster volume start pvs'",
+    "sudo bash -c 'gluster volume info'",
   ]
 }
 
@@ -135,6 +171,10 @@ resource "google_compute_instance" "master" {
 
   tags         = ["master", "${var.infra == "true" ? "master" : "infra"}", "${var.nodes == "0" ? "node" : "master"}"]
 
+  {{if .Components.pvs}}
+  depends_on = ["google_compute_instance.pvs"]
+  {{end}}
+
   disk {
     disk = "${google_compute_disk.disk_master_root.name}"
   }
@@ -153,6 +193,13 @@ resource "google_compute_instance" "master" {
       nat_ip = "${google_compute_address.address_master.address}"
     }
   }
+
+  {{if ne .Gce.ServiceAccount ""}}
+  service_account {
+    email  = "{{.Gce.ServiceAccount}}"
+    scopes = ["userinfo-email", "compute-rw", "storage-rw"]
+  }
+  {{end}}
 
   provisioner "remote-exec" {
     connection {
@@ -187,6 +234,10 @@ resource "google_compute_instance" "infra" {
   zone         = "{{.Gce.Zone}}"
   tags = ["infra"]
 
+  {{if .Components.pvs}}
+  depends_on = ["google_compute_instance.pvs"]
+  {{end}}
+
   disk {
     disk = "${google_compute_disk.disk_infra_root.name}"
   }
@@ -206,6 +257,13 @@ resource "google_compute_instance" "infra" {
     }
   }
 
+  {{if ne .Gce.ServiceAccount ""}}
+  service_account {
+    email  = "{{.Gce.ServiceAccount}}"
+    scopes = ["userinfo-email", "compute-rw", "storage-rw"]
+  }
+  {{end}}
+
   provisioner "remote-exec" {
     connection {
       user = "openshift"
@@ -215,6 +273,64 @@ resource "google_compute_instance" "infra" {
   }
 
 }
+
+{{if .Components.pvs and eq .Pvs.Type "gluster"}}
+resource "google_compute_disk" "disk_pvs_root" {
+  name  = "{{.Name}}-pvs-root"
+  type  = "pd-ssd"
+  zone  = "{{.Gce.Zone}}"
+  image = "${var.type == "ocp" ? "rhel-cloud/rhel-7" : "centos-cloud/centos-7"}"
+}
+
+resource "google_compute_disk" "disk_pvs_docker" {
+  name  = "{{.Name}}-pvs-docker"
+  type  = "pd-ssd"
+  zone  = "{{.Gce.Zone}}"
+  size  = "{{.Nodes.Disk.Size}}"
+}
+
+resource "google_compute_instance" "pvs" {
+  count        = "1"
+  name         = "{{.Name}}-pvs"
+  machine_type = "n1-standard-1"
+  zone         = "{{.Gce.Zone}}"
+  tags         = ["pvs"]
+
+  disk {
+    disk = "{{.Name}}-pvs-root"
+  }
+
+  disk {
+    disk = "{{.Name}}-pvs-docker"
+  }
+
+  metadata {
+    ssh-keys = "openshift:${file("${var.ssh_key}.pub")}"
+  }
+
+  network_interface {
+    network = "${google_compute_network.network.name}"
+    access_config {
+    }
+  }
+
+  {{if ne .Gce.ServiceAccount ""}}
+  service_account {
+    email  = "{{.Gce.ServiceAccount}}"
+    scopes = ["userinfo-email", "compute-rw", "storage-rw"]
+  }
+  {{end}}
+
+  provisioner "remote-exec" {
+    connection {
+      user = "openshift"
+      private_key = "${file("${var.ssh_key}")}"
+    }
+    inline = "${var.pvs_install}"
+  }
+
+}
+{{end}}
 
 resource "google_compute_disk" "disk_node_root" {
   count = "${var.nodes}"
@@ -239,7 +355,9 @@ resource "google_compute_instance" "node" {
   zone         = "{{.Gce.Zone}}"
   tags         = ["node"]
 
-  depends_on = ["google_compute_disk.disk_node_docker", "google_compute_disk.disk_node_root"]
+  {{if .Components.pvs}}
+  depends_on = ["google_compute_instance.pvs"]
+  {{end}}
 
   disk {
     disk = "{{.Name}}-node-${count.index}-root"
@@ -258,6 +376,13 @@ resource "google_compute_instance" "node" {
     access_config {
     }
   }
+
+  {{if ne .Gce.ServiceAccount ""}}
+  service_account {
+    email  = "{{.Gce.ServiceAccount}}"
+    scopes = ["userinfo-email", "compute-rw", "storage-rw"]
+  }
+  {{end}}
 
   provisioner "remote-exec" {
     connection {

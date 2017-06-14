@@ -29,6 +29,16 @@ deployment_type=origin
 
 {{if not (eq .Release "")}}openshift_release={{.Release}}{{end}}
 
+{{if eq .Provider "gce"}}
+{{if ne .Gce.ServiceAccount ""}}
+openshift_cloudprovider_kind=gce
+{{end}}
+{{end}}
+
+{{if .Components.cockpit}}
+osm_use_cockpit=true
+{{end}}
+
 {{if .Components.metrics}}
 openshift_hosted_metrics_deploy=True
 {{end}}
