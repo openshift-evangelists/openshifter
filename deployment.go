@@ -47,12 +47,13 @@ type DeploymentSsh struct {
 }
 
 type DeploymentNodes struct {
-	Type  string                         `yaml:"type"`
-	Count int                            `yaml:"count"`
-	Disk  DeploymentNodesDiskDefault     `yaml:"disk"`
-	Infra bool                           `yaml:"infra"`
-	Disks []DeploymentNodesDisk          `yaml:"disks"`
-	Nodes map[string]DeploymentNodesNode `yaml:"nodes"`
+	Type        string                         `yaml:"type"`
+	Count       int                            `yaml:"count"`
+	PodsPerCore int                            `yaml:"podsPerCore"`
+	Disk        DeploymentNodesDiskDefault     `yaml:"disk"`
+	Infra       bool                           `yaml:"infra"`
+	Disks       []DeploymentNodesDisk          `yaml:"disks"`
+	Nodes       map[string]DeploymentNodesNode `yaml:"nodes"`
 }
 
 type DeploymentNodesDiskDefault struct {
@@ -141,8 +142,9 @@ func defaults(name string) Deployment {
 		Release:   "v1.5.1",
 		Installer: "ansible",
 		Nodes: DeploymentNodes{
-			Count: 0,
-			Infra: false,
+			Count:       0,
+			PodsPerCore: 10,
+			Infra:       false,
 			Disk: DeploymentNodesDiskDefault{
 				Size: 100,
 			},

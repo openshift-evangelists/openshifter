@@ -72,6 +72,7 @@ pvs: # PVs always use hostPath
 nodes:
   count: 1 # container nodes in the cluster
   infra: false # separate master and infra
+  podsPerCore: 10 # how many pods can be on a node per core
   type: n1-standard-1 # See a list of machine types: https://cloud.google.com/compute/docs/machine-types
   disk:
     size: 100 # The docker storage disk in GB
