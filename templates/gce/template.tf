@@ -43,11 +43,11 @@ variable "post_install" {
     "sudo bash -c 'mount /dev/mapper/DOCKER-PVS /var/lib/origin/openshift.local.volumes'",
     "sudo bash -c 'echo \"/dev/mapper/DOCKER-PVS /var/lib/origin/openshift.local.volumes xfs defaults 0 1\" >> /etc/fstab'",
     "sudo bash -c 'mkdir -p /pvs'",
-    {{if .Components.pvs and eq .Pvs.Type "gluster"}}
+    {{if and (eq .Components.pvs true) (eq .Pvs.Type "gluster")}}
     "sudo bash -c 'yum install -y centos-release-gluster310'",
     "sudo bash -c 'yum install -y glusterfs gluster-cli glusterfs-libs glusterfs-fuse'",
     "sudo bash -c 'mount -t glusterfs {{.Name}}-pvs:/pvs /pvs'",
-    {{if .Components.pvs}}
+    {{end}}
   ]
 }
 
@@ -171,7 +171,7 @@ resource "google_compute_instance" "master" {
 
   tags         = ["master", "${var.infra == "true" ? "master" : "infra"}", "${var.nodes == "0" ? "node" : "master"}"]
 
-  {{if .Components.pvs}}
+  {{if and (eq .Components.pvs true) (eq .Pvs.Type "gluster")}}
   depends_on = ["google_compute_instance.pvs"]
   {{end}}
 
@@ -234,7 +234,7 @@ resource "google_compute_instance" "infra" {
   zone         = "{{.Gce.Zone}}"
   tags = ["infra"]
 
-  {{if .Components.pvs}}
+  {{if and (eq .Components.pvs true) (eq .Pvs.Type "gluster")}}
   depends_on = ["google_compute_instance.pvs"]
   {{end}}
 
@@ -274,7 +274,7 @@ resource "google_compute_instance" "infra" {
 
 }
 
-{{if .Components.pvs and eq .Pvs.Type "gluster"}}
+{{if and (eq .Components.pvs true) (eq .Pvs.Type "gluster")}}
 resource "google_compute_disk" "disk_pvs_root" {
   name  = "{{.Name}}-pvs-root"
   type  = "pd-ssd"
@@ -355,7 +355,7 @@ resource "google_compute_instance" "node" {
   zone         = "{{.Gce.Zone}}"
   tags         = ["node"]
 
-  {{if .Components.pvs}}
+  {{if and (eq .Components.pvs true) (eq .Pvs.Type "gluster")}}
   depends_on = ["google_compute_instance.pvs"]
   {{end}}
 
