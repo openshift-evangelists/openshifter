@@ -2,4 +2,4 @@
 
 export PATH="/root:$PATH"
 
-openshifter $@
+openshifter_linux_amd64 $@

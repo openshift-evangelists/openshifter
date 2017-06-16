@@ -16,8 +16,6 @@ RUN curl -o /root/terraform.zip https://releases.hashicorp.com/terraform/0.9.2/t
 
 ADD entrypoint.sh openshifter_linux_amd64 /root/
 
-RUN mv openshifter_linux_amd64 openshifter
-
 WORKDIR /root/data
 
 ENV OPENSHIFT_ANSIBLE="/root/openshift-ansible"
