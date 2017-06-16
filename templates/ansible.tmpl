@@ -37,6 +37,10 @@ openshift_cloudprovider_kind=gce
 {{end}}
 {{end}}
 
+{{if gt .Nodes.Count 0}}
+osm_default_node_selector='region=primary'
+{{end}}
+
 {{if .Components.cockpit}}
 osm_use_cockpit=true
 {{end}}

@@ -10,7 +10,6 @@ import (
 )
 
 func SetupEnvironment(deployment Deployment) {
-	// toDo https://github.com/marekjelen/openshifter/blob/master/openshifter/src/main/java/eu/mjelen/openshifter/task/openshift/OpenShiftMaster.java
 	// toDo https://github.com/marekjelen/openshifter/blob/master/openshifter/src/main/java/eu/mjelen/openshifter/task/component/NodePorts.java
 	// todo https://github.com/marekjelen/openshifter/blob/master/openshifter/src/main/java/eu/mjelen/openshifter/task/installer/OcuTask.java
 
