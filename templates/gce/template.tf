@@ -171,9 +171,7 @@ resource "google_compute_instance" "master" {
 
   tags         = ["master", "${var.infra == "true" ? "master" : "infra"}", "${var.nodes == "0" ? "node" : "master"}"]
 
-  {{if and (eq .Components.pvs true) (eq .Pvs.Type "gluster")}}
-  depends_on = ["google_compute_instance.pvs"]
-  {{end}}
+  depends_on = ["google_compute_disk.disk_master_root", "google_compute_disk.disk_master_docker"{{if and (eq .Components.pvs true) (eq .Pvs.Type "gluster")}}, "google_compute_instance.pvs"{{end}}]
 
   disk {
     disk = "${google_compute_disk.disk_master_root.name}"
@@ -234,9 +232,7 @@ resource "google_compute_instance" "infra" {
   zone         = "{{.Gce.Zone}}"
   tags = ["infra"]
 
-  {{if and (eq .Components.pvs true) (eq .Pvs.Type "gluster")}}
-  depends_on = ["google_compute_instance.pvs"]
-  {{end}}
+  depends_on = ["google_compute_disk.disk_infra_root", "google_compute_disk.disk_infra_docker"{{if and (eq .Components.pvs true) (eq .Pvs.Type "gluster")}}, "google_compute_instance.pvs"{{end}}]
 
   disk {
     disk = "${google_compute_disk.disk_infra_root.name}"
@@ -295,6 +291,8 @@ resource "google_compute_instance" "pvs" {
   machine_type = "n1-standard-1"
   zone         = "{{.Gce.Zone}}"
   tags         = ["pvs"]
+
+  depends_on = ["google_compute_disk.disk_pvs_root", "google_compute_disk.disk_pvs_docker"]
 
   disk {
     disk = "{{.Name}}-pvs-root"
@@ -355,9 +353,7 @@ resource "google_compute_instance" "node" {
   zone         = "{{.Gce.Zone}}"
   tags         = ["node"]
 
-  {{if and (eq .Components.pvs true) (eq .Pvs.Type "gluster")}}
-  depends_on = ["google_compute_instance.pvs"]
-  {{end}}
+  depends_on = ["google_compute_disk.disk_node_root", "google_compute_disk.disk_node_docker"{{if and (eq .Components.pvs true) (eq .Pvs.Type "gluster")}}, "google_compute_instance.pvs"{{end}}]
 
   disk {
     disk = "{{.Name}}-node-${count.index}-root"
