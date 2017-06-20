@@ -136,11 +136,19 @@ func Load(name string) (Deployment, error) {
 }
 
 func defaults(name string) Deployment {
+	components := make(map[string]bool)
+
+	components["cockpit"] = true
+	components["logging"] = false
+	components["metrics"] = false
+	components["pvs"] = false
+
 	return Deployment{
-		Name:      name,
-		Type:      "origin",
-		Release:   "v1.5.1",
-		Installer: "ansible",
+		Name:       name,
+		Type:       "origin",
+		Release:    "v1.5.1",
+		Installer:  "ansible",
+		Components: components,
 		Nodes: DeploymentNodes{
 			Count:       0,
 			PodsPerCore: 10,
