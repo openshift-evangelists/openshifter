@@ -1,0 +1,64 @@
+[OSEv3:children]
+masters
+nodes
+
+[masters]
+{{ cluster.master }}{% if not deployment.nodes.infra %} openshift_schedulable=true{% endif %}
+
+[nodes]
+{{ cluster.infra }} openshift_schedulable=true openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+{% if deployment.nodes.count >0 %}
+    {% for node in cluster.nodes %}
+        {{ node }} openshift_schedulable=true openshift_node_labels="{'region': 'primary', 'zone': 'default'}"
+    {% endfor %}
+{% endif %}
+
+[OSEv3:vars]
+ansible_user=openshift
+ansible_become=yes
+
+enable_excluders=false
+enable_docker_excluder=false
+
+containerized=True
+os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
+
+openshift_node_kubelet_args={'pods-per-core': ['{{ deployment.nodes.podsPerCore }}']}
+
+{% if deployment.type == 'ocp' %}
+deployment_type=openshift-enterprise
+{% else %}
+deployment_type=origin
+{% endif %}
+
+{% if deployment.release != None %}openshift_release={{ deployment.release}}{% endif %}
+
+{% if deployment.provider == 'gce' %}
+{% endif %}
+
+{% if deployment.nodes.count > 0 %}
+osm_default_node_selector='region=primary'
+{% endif %}
+
+{% if 'cockpit' in deployment.components and deployment.components.cockpit %}
+osm_use_cockpit=true
+{% endif %}
+
+{% if 'metrics' in deployment.components and deployment.components.metrics %}
+openshift_hosted_metrics_deploy=True
+{% endif %}
+
+{% if 'logging' in deployment.components and deployment.components.logging %}
+openshift_hosted_logging_deploy=True
+{% if deployment.release != None %}openshift_logging_image_version={{ deployment.release }}{% endif %}
+{% endif %}
+
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+{% if deployment.dns.zone == 'nip' %}
+openshift_public_hostname=console.{{ cluster.infra }}.nip.io
+openshift_master_default_subdomain=apps.{{ cluster.infra }}.nip.io
+{% else %}
+openshift_public_hostname=console.{{ deployment.name }}.{{ deployment.dns.suffix }}
+openshift_master_default_subdomain=apps.{{ deployment.name }}.{{ deployment.dns.suffix }}
+{%  endif %}

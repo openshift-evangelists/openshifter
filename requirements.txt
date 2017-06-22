@@ -1,0 +1,4 @@
+PyYAML
+paramiko
+apache-libcloud==1.5.0
+click
