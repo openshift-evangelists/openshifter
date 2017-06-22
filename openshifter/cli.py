@@ -76,7 +76,7 @@ def destroy(name):
     deployment, infrastructure, cluster = load_environment(name)
     infrastructure.destroy()
     driver = dns.find(deployment)
-    driver.create(cluster)
+    driver.destroy(cluster)
 
 cli.add_command(provision)
 cli.add_command(install)
