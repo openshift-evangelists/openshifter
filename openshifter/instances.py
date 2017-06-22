@@ -64,7 +64,7 @@ def post_install(ssh, deployment):
                 ssh.execute("master", "oc adm policy add-cluster-role-to-user cluster-admin " + username, False)
 
             if 'sudoer' in user and user['sudoer']:
-                ssh.execute("master", "c adm policy add-cluster-role-to-user sudoer " + username, False)
+                ssh.execute("master", "oc adm policy add-cluster-role-to-user sudoer " + username, False)
 
     if 'execute' in deployment.data:
         for cmd in deployment['execute']:
