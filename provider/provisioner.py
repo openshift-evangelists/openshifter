@@ -4,7 +4,7 @@ class Provisioner:
     def __init__(self, deployment, logger=None):
         self.deployment = deployment
         if logger is None:
-            self.logger = logging.getLogger('Provisioner (%s)' % deployment['provider'])
+            self.logger = logging.getLogger('Provisioner(%s)' % deployment['provider'])
         else:
             self.logger = logger
 
@@ -33,6 +33,7 @@ class Provisioner:
                 self.logger.info("Infra does not exist")
         else:
             cluster.infra = cluster.master
+            cluster.master.labels.append("infra")
 
         if self.has_nodes():
             for x in range(0, self.deployment['nodes']['count']):
@@ -48,21 +49,35 @@ class Provisioner:
                     self.logger.info("Node %s does not exist", name)
         else:
             cluster.nodes.append(cluster.master)
+            cluster.master.labels.append("node")
 
         return cluster
 
     def create(self):
         self.pre_create()
 
-        self.create_node("master", ['master'])
+        master = ["master"]
+        infra = ['infra']
+        nodes = ['node']
+
+        if not self.has_infra():
+            master.append("infra")
+
+        if not self.has_nodes():
+            master.append("node")
+
+        self.create_node("master", master)
+
         if self.has_infra():
-            self.create_node("infra", ['infra'])
+            self.create_node("infra", infra)
+
         if self.has_nodes():
             for x in range(0, self.deployment['nodes']['count']):
                 name = "node-" + str(x)
-                self.create_node(name, ['node'])
+                self.create_node(name, nodes)
 
         self.post_create()
+
         return self.validate()
 
     def destroy(self):

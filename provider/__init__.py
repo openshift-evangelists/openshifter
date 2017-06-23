@@ -1,7 +1,9 @@
 import provider.gce
+from provider import byo
 
 DRIVERS = {
-    "gce": gce.Gce
+    "gce": gce.Gce,
+    "byo": byo.Byo
 }
 
 
