@@ -23,7 +23,7 @@ class Google:
             name = name + '.' + self.deployment.name + '.' + self.deployment['dns']['suffix'] + '.'
             try:
                 logging.info("Creating DNS record %s" % name)
-                data = {'ttl': 60, 'rrdatas': [cluster.infra]}
+                data = {'ttl': 60, 'rrdatas': [cluster.infra.public_address]}
                 self.dns.create_record(name, zone, RecordType.A, data)
             except ResourceExistsError:
                 logging.info("Record already exists")
@@ -36,7 +36,7 @@ class Google:
             try:
                 name = name + '.' + self.deployment.name + '.' + self.deployment['dns']['suffix'] + '.'
                 logging.info("Destroying DNS record %s" % name)
-                data = {'ttl': 60, 'rrdatas': [cluster.infra]}
+                data = {'ttl': 60, 'rrdatas': [cluster.infra.public_address]}
                 record = Record('', name=name, type=RecordType.A, zone=zone, driver=self.dns, data=data)
                 self.dns.delete_record(record)
             except ResourceNotFoundError:

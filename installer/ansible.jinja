@@ -3,13 +3,13 @@ masters
 nodes
 
 [masters]
-{{ cluster.master }}{% if not deployment.nodes.infra %} openshift_schedulable=true{% endif %}
+{{ cluster.master.public_address }}{% if not deployment.nodes.infra %} openshift_schedulable=true{% endif %}
 
 [nodes]
-{{ cluster.infra }} openshift_schedulable=true openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+{{ cluster.infra.public_address }} openshift_schedulable=true openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 {% if deployment.nodes.count >0 %}
     {% for node in cluster.nodes %}
-        {{ node }} openshift_schedulable=true openshift_node_labels="{'region': 'primary', 'zone': 'default'}"
+        {{ node.public_address }} openshift_schedulable=true openshift_node_labels="{'region': 'primary', 'zone': 'default'}"
     {% endfor %}
 {% endif %}
 
@@ -56,8 +56,8 @@ openshift_hosted_logging_deploy=True
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
 
 {% if deployment.dns.zone == 'nip' %}
-openshift_public_hostname=console.{{ cluster.infra }}.nip.io
-openshift_master_default_subdomain=apps.{{ cluster.infra }}.nip.io
+openshift_public_hostname=console.{{ cluster.infra.public_address }}.nip.io
+openshift_master_default_subdomain=apps.{{ cluster.infra.public_address }}.nip.io
 {% else %}
 openshift_public_hostname=console.{{ deployment.name }}.{{ deployment.dns.suffix }}
 openshift_master_default_subdomain=apps.{{ deployment.name }}.{{ deployment.dns.suffix }}

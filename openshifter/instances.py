@@ -24,6 +24,7 @@ POST_PROVISION = [
 def _check_component(deployment, name):
     return name in deployment['components'] and deployment['components'][name]
 
+
 def post_provision(ssh):
     for cmd in POST_PROVISION:
         logging.info("Executing " + cmd)

@@ -4,13 +4,12 @@ import paramiko
 class Ssh:
     def __init__(self, deployment, cluster):
         self.deployment = deployment
-        self.cluster = cluster
         self.hosts = {"*": []}
 
-        self.connect("master", cluster.master)
-        self.connect("infra", cluster.infra)
+        self.connect("master", cluster.master.public_address)
+        self.connect("infra", cluster.infra.public_address)
         for node in cluster.nodes:
-            self.connect("node", node)
+            self.connect("node", node.public_address)
 
     def connect(self, tag, address):
         client = paramiko.SSHClient()
