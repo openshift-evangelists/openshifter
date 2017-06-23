@@ -32,6 +32,14 @@ class Ssh:
             stderr = channel.makefile_stderr('r', -1)
             return SshResult(channel.recv_exit_status(), stdout.read(), stderr.read())
 
+    def write(self, tag, target, content):
+        for client in self.hosts[tag]:
+            sftp = client.open_sftp()
+            file = sftp.file(target, 'w')
+            file.write(content)
+            file.close()
+
+
 class SshResult:
     def __init__(self, code, stdout, stderr ):
         self.code = code
