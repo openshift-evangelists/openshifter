@@ -1,5 +1,6 @@
 import logging
 
+
 class Provisioner:
     def __init__(self, deployment, logger=None):
         self.deployment = deployment
@@ -18,7 +19,7 @@ class Provisioner:
         cluster.master.labels.append("master")
         cluster.valid = cluster.valid and cluster.master.exists
         if cluster.master.exists:
-            self.logger.info("Master exists")
+            self.logger.info("Master exists (%s)", cluster.master.public_address)
         else:
             self.logger.info("Master does not exist")
 
@@ -27,8 +28,8 @@ class Provisioner:
             cluster.infra = self.get_node("infra")
             cluster.infra.labels.append("infra")
             cluster.valid = cluster.valid and cluster.infra.exists
-            if cluster.master.exists:
-                self.logger.info("Infra exists")
+            if cluster.infra.exists:
+                self.logger.info("Infra exists (%s)" % cluster.infra.public_address)
             else:
                 self.logger.info("Infra does not exist")
         else:
@@ -43,13 +44,24 @@ class Provisioner:
                 node.labels.append("node")
                 cluster.nodes.append(node)
                 cluster.valid = cluster.valid and node.exists
-                if cluster.master.exists:
-                    self.logger.info("Node %s exists", name)
+                if node.exists:
+                    self.logger.info("Node %s exists (%s)", name, node.public_address)
                 else:
                     self.logger.info("Node %s does not exist", name)
         else:
             cluster.nodes.append(cluster.master)
             cluster.master.labels.append("node")
+
+        if 'pvs' in self.deployment['components'] and self.deployment['components'] and 'pvs' in self.deployment.data:
+            if 'type' in self.deployment['pvs'] and self.deployment['pvs']['type'] == 'gluster':
+                self.logger.info("Validating PV node existence")
+                cluster.pvs = self.get_node("pvs")
+                cluster.pvs.labels.append("pvs")
+                cluster.valid = cluster.valid and cluster.pvs.exists
+                if cluster.pvs.exists:
+                    self.logger.info("PV node exists (%s)" % cluster.pvs.public_address)
+                else:
+                    self.logger.info("PV node does not exist")
 
         return cluster
 
@@ -76,6 +88,10 @@ class Provisioner:
                 name = "node-" + str(x)
                 self.create_node(name, nodes)
 
+        if 'pvs' in self.deployment['components'] and self.deployment['components'] and 'pvs' in self.deployment.data:
+            if 'type' in self.deployment['pvs'] and self.deployment['pvs']['type'] == 'gluster':
+                self.create_node("pvs", ['pvs'])
+
         self.post_create()
 
         return self.validate()
@@ -90,6 +106,9 @@ class Provisioner:
             for x in range(0, self.deployment['nodes']['count']):
                 name = "node-" + str(x)
                 self.destroy_node(name)
+        if 'pvs' in self.deployment['components'] and self.deployment['components'] and 'pvs' in self.deployment.data:
+            if 'type' in self.deployment['pvs'] and self.deployment['pvs']['type'] == 'gluster':
+                self.destroy_node("pvs")
 
         self.post_destroy()
 
@@ -130,6 +149,7 @@ class Cluster:
         self.valid = False
         self.master = None
         self.infra = None
+        self.pvs = None
         self.nodes = []
 
 

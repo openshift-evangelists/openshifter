@@ -1,5 +1,6 @@
 import logging
 import re
+from functools import reduce
 
 import yaml
 
@@ -23,22 +24,63 @@ POST_PROVISION = [
     "mkdir -p /pvs",
 ]
 
+PVS = [
+    "yum -y update",
+    "yum install -y centos-release-gluster310",
+    "yum install -y glusterfs gluster-cli glusterfs-libs glusterfs-server",
+    "pvcreate /dev/sdb",
+    "vgcreate PVS /dev/sdb",
+    "lvcreate -l 100%FREE -n PVS PVS",
+    "mkfs.xfs -i size=512 /dev/mapper/PVS-PVS",
+    "mkdir -p /data/brick1",
+    "echo \"/dev/mapper/PVS-PVS /data/brick1 xfs defaults 1 2\" >> /etc/fstab",
+    "mount -a && mount",
+    "systemctl start glusterd",
+    "systemctl enable glusterd",
+    "mkdir -p /data/brick1/pvs",
+    "gluster volume create pvs {{name}}-pvs:/data/brick1/pvs",
+    "gluster volume start pvs",
+    "gluster volume info",
+]
+
 
 def check_component(deployment, name):
     return name in deployment['components'] and deployment['components'][name]
 
 
-def post_provision(ssh):
-    for cmd in POST_PROVISION:
-        logging.info("Executing " + cmd)
-        result = ssh.execute("*", cmd, True)
-        if result.code == 0:
+def post_provision(ssh, deployment):
+    cmds = POST_PROVISION
+    if 'pvs' in deployment['components'] and deployment['components'] and 'pvs' in deployment.data:
+        if 'type' in deployment['pvs'] and deployment['pvs']['type'] == 'gluster':
+            for cmd in PVS:
+                cmd = cmd.replace("{{name}}", deployment.name)
+                logging.info("Executing %s" % cmd)
+                result = ssh.execute("pvs", cmd, True)
+                if reduce(lambda c, r: c and r.code == 0, result, True):
+                    logging.info("Successfully finished")
+                else:
+                    logging.error("Command failed")
+            cmds += [
+                "yum install -y centos-release-gluster310",
+                "yum install -y glusterfs gluster-cli glusterfs-libs glusterfs-fuse",
+                "mount -t glusterfs {{name}}-pvs:/pvs /pvs"
+            ]
+
+    for cmd in cmds:
+        cmd = cmd.replace("{{name}}", deployment.name)
+        logging.info("Executing %s" % cmd)
+        result = ssh.execute("master", cmd, True)
+
+        if deployment['nodes']['infra']:
+            result += ssh.execute("infra", cmd, True)
+
+        if deployment['nodes']['count'] > 0:
+            result += ssh.execute("node", cmd, True)
+
+        if reduce(lambda c,r: c and r.code == 0, result, True):
             logging.info("Successfully finished")
-            logging.error(result.stdout)
         else:
             logging.error("Command failed")
-            logging.error(result.stderr)
-
 
 def post_install(ssh, deployment):
     if check_component(deployment, 'logging'):

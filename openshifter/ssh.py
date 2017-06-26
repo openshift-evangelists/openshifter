@@ -8,6 +8,7 @@ class Ssh:
 
         self.connect("master", cluster.master.public_address)
         self.connect("infra", cluster.infra.public_address)
+        self.connect("pvs", cluster.pvs.public_address)
         for node in cluster.nodes:
             self.connect("node", node.public_address)
 
@@ -23,6 +24,7 @@ class Ssh:
         self.hosts["*"].append(client)
 
     def execute(self, tag, cmd, sudo=False):
+        result = []
         if sudo:
             cmd = 'sudo bash -c \'' + cmd + '\''
         for client in self.hosts[tag]:
@@ -30,7 +32,8 @@ class Ssh:
             channel.exec_command(cmd)
             stdout = channel.makefile('r', -1)
             stderr = channel.makefile_stderr('r', -1)
-            return SshResult(channel.recv_exit_status(), stdout.read(), stderr.read())
+            result.append(SshResult(channel.recv_exit_status(), stdout.read(), stderr.read()))
+        return result
 
     def write(self, tag, target, content):
         for client in self.hosts[tag]:

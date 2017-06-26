@@ -6,6 +6,7 @@ from libcloud.dns.base import Record
 import json
 import logging
 
+
 class Google:
     def __init__(self, deployment):
         self.deployment = deployment

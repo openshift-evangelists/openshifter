@@ -32,7 +32,7 @@ def provision(name):
     driver = dns.find(deployment)
     driver.create(cluster)
     ssh = Ssh(deployment, cluster)
-    openshifter.instances.post_provision(ssh)
+    openshifter.instances.post_provision(ssh, deployment)
 
 
 @click.command()
