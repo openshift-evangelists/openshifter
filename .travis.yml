@@ -13,8 +13,8 @@ install: "pip install -r requirements.txt"
 script: python main.py
 
 after_success:
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASS
   - export REPO=osevg/openshifter
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
   - docker build -f Dockerfile -t $REPO:$TAG .
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - docker push $REPO
