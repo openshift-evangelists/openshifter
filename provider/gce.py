@@ -63,7 +63,10 @@ class Gce(Provisioner):
                                             ex_boot_disk=boot,
                                             use_existing_disk=True,
                                             external_ip=address,
-                                            ex_service_accounts=[]
+                                            ex_service_accounts=[{
+                                                'email': self.credentials['client_email'],
+                                                'scopes': ['compute']
+                                            }]
                                             )
             self.compute.attach_volume(node, docker, ex_auto_delete=True)
         except ResourceExistsError:

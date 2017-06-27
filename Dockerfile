@@ -9,15 +9,15 @@ WORKDIR /root
 RUN git clone https://github.com/openshift/openshift-ansible.git
 RUN cd openshift-ansible && git checkout release-1.5 && cd ..
 
-ADD entrypoint.sh /root/
+ADD entrypoint.sh requirements.txt /root/
 
-ADD main.py requirements.txt /root/
+RUN pip3.6 install -r requirements.txt
+
+ADD main.py /root/
 ADD dns /root/dns
 ADD installer /root/installer
 ADD openshifter /root/openshifter
 ADD provider /root/provider
-
-RUN pip3.6 install -r requirements.txt
 
 WORKDIR /root/data
 

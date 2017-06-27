@@ -8,7 +8,10 @@ class Ssh:
 
         self.connect("master", cluster.master.public_address)
         self.connect("infra", cluster.infra.public_address)
-        self.connect("pvs", cluster.pvs.public_address)
+
+        if cluster.pvs:
+            self.connect("pvs", cluster.pvs.public_address)
+
         for node in cluster.nodes:
             self.connect("node", node.public_address)
 
