@@ -29,7 +29,7 @@ class Ansible:
         else:
             path = os.path.abspath('openshift-ansible') + '/playbooks/byo/config.yml'
 
-        cmd = ["ansible-playbook", '-vvvv', '-i', inventory, path]
+        cmd = ["ansible-playbook", '-i', inventory, path]
 
         logging.info("Executing " + str(cmd) + ' in ' + os.getcwd())
 

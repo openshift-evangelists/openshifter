@@ -4,3 +4,4 @@ apache-libcloud==1.5.0
 click
 Jinja2
 pycrypto
+eventbrite

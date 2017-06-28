@@ -52,7 +52,7 @@ class Provisioner:
             cluster.nodes.append(cluster.master)
             cluster.master.labels.append("node")
 
-        if 'pvs' in self.deployment['components'] and self.deployment['components'] and 'pvs' in self.deployment.data:
+        if 'pvs' in self.deployment['components'] and self.deployment['components']['pvs'] and 'pvs' in self.deployment.data:
             if 'type' in self.deployment['pvs'] and self.deployment['pvs']['type'] == 'gluster':
                 self.logger.info("Validating PV node existence")
                 cluster.pvs = self.get_node("pvs")
@@ -88,7 +88,7 @@ class Provisioner:
                 name = "node-" + str(x)
                 self.create_node(name, nodes)
 
-        if 'pvs' in self.deployment['components'] and self.deployment['components'] and 'pvs' in self.deployment.data:
+        if 'pvs' in self.deployment['components'] and self.deployment['components']['pvs'] and 'pvs' in self.deployment.data:
             if 'type' in self.deployment['pvs'] and self.deployment['pvs']['type'] == 'gluster':
                 self.create_node("pvs", ['pvs'])
 
@@ -106,7 +106,7 @@ class Provisioner:
             for x in range(0, self.deployment['nodes']['count']):
                 name = "node-" + str(x)
                 self.destroy_node(name)
-        if 'pvs' in self.deployment['components'] and self.deployment['components'] and 'pvs' in self.deployment.data:
+        if 'pvs' in self.deployment['components'] and self.deployment['components']['pvs'] and 'pvs' in self.deployment.data:
             if 'type' in self.deployment['pvs'] and self.deployment['pvs']['type'] == 'gluster':
                 self.destroy_node("pvs")
 

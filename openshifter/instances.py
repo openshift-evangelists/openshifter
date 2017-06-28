@@ -1,6 +1,7 @@
 import logging
 import re
 from functools import reduce
+from eventbrite import Eventbrite
 
 import yaml
 
@@ -50,7 +51,7 @@ def check_component(deployment, name):
 
 def post_provision(ssh, deployment):
     cmds = POST_PROVISION
-    if 'pvs' in deployment['components'] and deployment['components'] and 'pvs' in deployment.data:
+    if 'pvs' in deployment['components'] and deployment['components']['pvs'] and 'pvs' in deployment.data:
         if 'type' in deployment['pvs'] and deployment['pvs']['type'] == 'gluster':
             for cmd in PVS:
                 cmd = cmd.replace("{{name}}", deployment.name)
@@ -81,6 +82,7 @@ def post_provision(ssh, deployment):
             logging.info("Successfully finished")
         else:
             logging.error("Command failed")
+
 
 def post_install(ssh, deployment):
     if check_component(deployment, 'logging'):
@@ -126,27 +128,32 @@ def post_install(ssh, deployment):
     ssh.execute("master", "oc sa get-token robot --namespace=default", False)
 
     for user in deployment['users']:
-        if 'generic' in user and user['generic']:
+        if 'eventbrite' in user:
+            token = deployment['eventbrite']['token']
+            event = user['eventbrite']
+
+            eventbrite = Eventbrite(token)
+            attendees = eventbrite.get_event_attendees(event)
+            print(attendees)
+            for attendee in attendees['attendees']:
+                project = generate_user(attendee['profile']['email'], attendee['profile']['email'], ssh)
+
+                if 'execute' in user:
+                    execute_for_user(project, user['execute'], ssh)
+
+        elif 'generic' in user and user['generic']:
             for x in range(user['min'], user['max']):
                 username = user['username'] + str(x)
                 password = user['password'] + str(x)
-                project = re.sub(r'[^-0-9a-z]', '-', username)
 
-                ssh.execute("master", "htpasswd -b /etc/origin/master/htpasswd " + username + " " + password, True)
-                ssh.execute("master", "oc new-project " + project, False)
-                ssh.execute("master", "oc adm policy add-role-to-user admin " + username + " -n " + project, False)
+                project = generate_user(username, password, ssh)
 
                 if 'execute' in user:
-                    for cmd in user['execute']:
-                        ssh.execute("master", cmd + " -n " + project, False)
+                    execute_for_user(project, user['execute'], ssh)
+
         else:
             username = user['username']
-            password = user['password']
-            project = re.sub(r'[^-0-9a-z]', '-', username)
-
-            ssh.execute("master", "htpasswd -b /etc/origin/master/htpasswd " + username + " " + password, True)
-            ssh.execute("master", "oc new-project " + project, False)
-            ssh.execute("master", "oc adm policy add-role-to-user admin " + username + " -n " + project, False)
+            project = generate_user(username, user['password'], ssh)
 
             if 'admin' in user and user['admin']:
                 ssh.execute("master", "oc adm policy add-cluster-role-to-user cluster-admin " + username, False)
@@ -155,8 +162,7 @@ def post_install(ssh, deployment):
                 ssh.execute("master", "oc adm policy add-cluster-role-to-user sudoer " + username, False)
 
             if 'execute' in user:
-                for cmd in user['execute']:
-                    ssh.execute("master", cmd + " -n " + username, False)
+                execute_for_user(project, user['execute'], ssh)
 
     if 'execute' in deployment.data:
         for cmd in deployment['execute']:
@@ -165,3 +171,20 @@ def post_install(ssh, deployment):
     if 'docker' in deployment.data and 'prime' in deployment['docker']:
         for image in deployment['docker']['prime']:
             ssh.execute("*", "docker pull " + image, True)
+
+
+def generate_user(username, password, ssh):
+    project = re.sub(r'[^-0-9a-z]', '-', username)
+
+    logging.info("Generating user %s with password %s and project %s", username, password, project)
+
+    ssh.execute("master", "htpasswd -b /etc/origin/master/htpasswd " + username + " " + password, True)
+    ssh.execute("master", "oc new-project " + project, False)
+    ssh.execute("master", "oc adm policy add-role-to-user admin " + username + " -n " + project, False)
+
+    return project
+
+
+def execute_for_user(project, execute, ssh):
+    for cmd in execute:
+        ssh.execute("master", cmd + " -n " + project, False)
