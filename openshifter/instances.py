@@ -134,7 +134,7 @@ def post_install(ssh, deployment):
 
             eventbrite = Eventbrite(token)
             attendees = eventbrite.get_event_attendees(event)
-            print(attendees)
+
             for attendee in attendees['attendees']:
                 project = generate_user(attendee['profile']['email'], attendee['profile']['email'], ssh)
 
