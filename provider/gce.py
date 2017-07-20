@@ -1,4 +1,5 @@
 import json
+import os.path
 
 import libcloud
 from libcloud.common.google import ResourceNotFoundError, ResourceExistsError
@@ -21,7 +22,8 @@ class Gce(Provisioner):
         ]
         kwargs = {
             'project': self.gce['project'],
-            'datacenter': self.gce['zone']
+            'datacenter': self.gce['zone'],
+            'credential_file': os.path.join(os.path.curdir, 'openshifter', self.name, 'credentials.cache')
         }
 
         self.logger.info("Setting up")
