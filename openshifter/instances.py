@@ -1,7 +1,7 @@
 import logging
 import re
-from functools import reduce
 from eventbrite import Eventbrite
+from functools import reduce
 
 import yaml
 

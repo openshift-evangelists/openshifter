@@ -33,6 +33,9 @@ class Google:
         logging.info("Looking up zone")
         zone = self.dns.get_zone(self.deployment['dns']['zone'])
 
+        if cluster.infra.public_address is None or cluster.infra.public_address == '':
+            return
+
         for name in ['console', '*.apps']:
             try:
                 name = name + '.' + self.deployment.name + '.' + self.deployment['dns']['suffix'] + '.'

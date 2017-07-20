@@ -77,8 +77,14 @@ class Gce(Provisioner):
 
     def destroy_node(self, name):
         name = self.name + '-' + name
-        self.compute.destroy_node(self.compute.ex_get_node(name, zone=self.gce['zone']))
-        self.compute.ex_destroy_address(self.compute.ex_get_address(name))
+        try:
+            self.compute.destroy_node(self.compute.ex_get_node(name, zone=self.gce['zone']))
+        except ResourceNotFoundError:
+            pass
+        try:
+            self.compute.ex_destroy_address(self.compute.ex_get_address(name))
+        except ResourceNotFoundError:
+            pass
 
     def create_disk(self, name, size=None):
         args = {
@@ -137,8 +143,26 @@ class Gce(Provisioner):
             self.logger.info('Firewall rule already exists')
 
     def post_destroy(self):
-        self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-all"))
-        self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-internal"))
-        self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-master"))
-        self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-infra"))
-        self.compute.ex_destroy_network(self.compute.ex_get_network(self.name))
+        try:
+            self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-all"))
+        except ResourceNotFoundError:
+            pass
+        try:
+            self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-internal"))
+        except ResourceNotFoundError:
+            pass
+
+        try:
+            self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-master"))
+        except ResourceNotFoundError:
+            pass
+
+        try:
+            self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-infra"))
+        except ResourceNotFoundError:
+            pass
+
+        try:
+            self.compute.ex_destroy_network(self.compute.ex_get_network(self.name))
+        except ResourceNotFoundError:
+            pass
