@@ -21,6 +21,9 @@ def load_environment(name):
 def cli():
     pass
 
+@click.command()
+def web():
+    import web
 
 @click.command()
 @click.argument('name')
@@ -78,6 +81,7 @@ def destroy(name):
     driver = dns.find(deployment)
     driver.destroy(cluster)
 
+cli.add_command(web)
 cli.add_command(provision)
 cli.add_command(install)
 cli.add_command(setup)

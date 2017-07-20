@@ -1,0 +1,156 @@
+properties:
+  - name: name
+    type: string
+    display: Name
+
+  - name: bastion
+    type: boolean
+    display: Bastion
+    default: false
+    options: [false, true]
+
+  - name: installer
+    type: string
+    display: Installer
+    default: ansible
+    options: ['ansible']
+
+  - name: provider
+    type: string
+    display: Provider
+    default: gce
+
+  - name: type
+    type: string
+    display: Type
+    default: origin
+    options: ['origin', 'gce']
+
+  - name: release
+    type: string
+    display: Name
+    default: v1.5.1
+
+  - name: dns
+    type: section
+    display: DNS
+    properties:
+      - name: zone
+        type: string
+        display: Zone
+      - name: suffix
+        type: string
+        display: Suffix
+
+  - name: ssh
+    type: section
+    display: SSH
+    properties:
+      - name: key
+        type: string
+        display: Key
+
+  - name: components
+    type: section
+    display: Components
+    properties:
+      - name: cockpit
+        type: boolean
+        display: Cockpit
+        default: false
+      - name: metrics
+        type: boolean
+        display: Metrics
+        default: false
+      - name: logging
+        type: boolean
+        display: Logging
+        default: false
+      - name: pvs
+        type: boolean
+        display: Persistent Volumes
+        default: false
+
+  - name: pvs
+    type: section
+    display: SSH
+    properties:
+      - name: type
+        type: string
+        display: Type
+        default: ''
+        options: ['', 'gluster']
+      - name: size
+        type: integer
+        display: Size (GB)
+      - name: count
+        type: integer
+        display: Count
+
+  - name: nodes
+    type: section
+    display: Nodes
+    properties:
+      - name: type
+        type: string
+        display: Type
+        default: 'n1-standard-1'
+      - name: count
+        type: integer
+        display: Count
+        default: 0
+      - name: infra
+        type: boolean
+        display: Infrastructure node
+        default: false
+      - name: podsPerCore
+        type: integer
+        display: Pods per core
+        default: 10
+      - name: disk
+        type: section
+        display: Disk
+        properties:
+          - name: size
+            type: integer
+            display: Size (GB)
+            default: 10
+
+  - name: execute
+    type: list|string
+    display: Execute commands
+    default: []
+
+  - name: docker
+    type: section
+    display: Docker
+    properties:
+      - name: prime
+        type: list|string
+        display: Prime images
+        default: []
+
+  - name: eventbrite
+    type: section
+    display: Eventbrite
+    properties:
+      - name: token
+        type: string
+        display: Token
+
+  - name: gce
+    type: section
+    display: GCE
+    properties:
+      - name: account
+        type: string
+        display: Account JSON file name
+      - name: region
+        type: string
+        display: Region
+      - name: zone
+        type: string
+        display: Zone
+      - name: project
+        type: string
+        display: Project

@@ -4,4 +4,10 @@ apache-libcloud==1.5.0
 click
 Jinja2
 pycrypto
+
 eventbrite
+
+aiohttp
+cchardet
+aiodns
+aiohttp_jinja2

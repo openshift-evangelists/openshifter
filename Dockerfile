@@ -22,6 +22,7 @@ ADD provider /root/provider
 WORKDIR /root/data
 
 ENV OPENSHIFT_ANSIBLE="/root/openshift-ansible"
+ENV ROOT_DIR="/root/"
 
 VOLUME ['/root/data']
 
