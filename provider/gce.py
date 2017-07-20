@@ -10,6 +10,7 @@ class Gce(Provisioner):
     def __init__(self, deployment, logger=None):
         Provisioner.__init__(self, deployment, logger)
 
+        self.logger.info("Configuring")
         self.name = self.deployment.name
         self.gce = self.deployment['gce']
         self.credentials = json.load(open(self.gce['account'], 'r'))
@@ -23,9 +24,11 @@ class Gce(Provisioner):
             'datacenter': self.gce['zone']
         }
 
+        self.logger.info("Setting up")
         driver = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.GCE)
         self.compute = driver(*args, **kwargs)
 
+        self.logger.info("Getting disk image")
         if self.deployment['type'] == 'ocp':
             self.disk_image = self.compute.ex_get_image('rhel-7')
         else:
@@ -33,6 +36,7 @@ class Gce(Provisioner):
 
     def get_node(self, name):
         try:
+            self.logger.info("Getting node")
             node = self.compute.ex_get_node(self.name + "-" + name, zone=self.gce['zone'])
         except ResourceNotFoundError:
             return Node(name)
@@ -45,10 +49,10 @@ class Gce(Provisioner):
     def create_node(self, name, labels):
         boot = self.create_disk(name + "-root")
         docker = self.create_disk(name + "-docker", 100)
-
         address = self.create_address(name)
 
         try:
+            self.logger.info("Creating node")
             node = self.compute.create_node(self.name + "-" + name,
                                             self.deployment['nodes']['type'],
                                             None,
@@ -68,6 +72,7 @@ class Gce(Provisioner):
                                                 'scopes': ['compute']
                                             }]
                                             )
+            self.logger.info("Attaching Docker volume")
             self.compute.attach_volume(node, docker, ex_auto_delete=True)
         except ResourceExistsError:
             self.logger.info('Node already exists')
@@ -78,10 +83,12 @@ class Gce(Provisioner):
     def destroy_node(self, name):
         name = self.name + '-' + name
         try:
+            self.logger.info("Destroying node")
             self.compute.destroy_node(self.compute.ex_get_node(name, zone=self.gce['zone']))
         except ResourceNotFoundError:
             pass
         try:
+            self.logger.info("Destroying IP adress")
             self.compute.ex_destroy_address(self.compute.ex_get_address(name))
         except ResourceNotFoundError:
             pass
@@ -93,26 +100,32 @@ class Gce(Provisioner):
         }
         if size is None:
             args['image'] = self.disk_image
+
+        self.logger.info("Creating disk %s" % name)
         return self.compute.create_volume(size, self.name + "-" + name, **args)
 
     def create_address(self, name):
         try:
+            self.logger.info("Creating IP address")
             return self.compute.ex_create_address(self.name + "-" + name, region=self.gce['region'])
         except ResourceExistsError:
             self.logger.info('Address already exists')
             return self.compute.ex_get_address(self.name + "-" + name, region=self.gce['region'])
 
     def get_network(self):
+        self.logger.info("Getting network")
         return self.compute.ex_get_network(self.name)
 
     def pre_create(self):
         try:
+            self.logger.info("Creating network")
             network = self.compute.ex_create_network(self.name, None, mode='auto')
         except ResourceExistsError:
             self.logger.info('Network already exists')
             network = self.compute.ex_get_network(self.name)
 
         try:
+            self.logger.info("Creating firewall rule")
             self.compute.ex_create_firewall(self.name + "-all", [
                 {'IPProtocol': 'tcp', 'ports': ['22']}
             ], network=network.name)
@@ -120,6 +133,7 @@ class Gce(Provisioner):
             self.logger.info('Firewall rule already exists')
 
         try:
+            self.logger.info("Creating firewall rule")
             self.compute.ex_create_firewall(self.name + "-internal", [
                 {'IPProtocol': 'icmp'},
                 {'IPProtocol': 'tcp', 'ports': ['0-65535']},
@@ -129,6 +143,7 @@ class Gce(Provisioner):
             self.logger.info('Firewall rule already exists')
 
         try:
+            self.logger.info("Creating firewall rule")
             self.compute.ex_create_firewall(self.name + "-master", [
                 {'IPProtocol': 'tcp', 'ports': ['8443']}
             ], network=network.name, target_tags=['master'])
@@ -136,6 +151,7 @@ class Gce(Provisioner):
             self.logger.info('Firewall rule already exists')
 
         try:
+            self.logger.info("Creating firewall rule")
             self.compute.ex_create_firewall(self.name + "-infra", [
                 {'IPProtocol': 'tcp', 'ports': ["80", "443", "30000-32767"]}
             ], network=network.name, target_tags=['infra'])
@@ -144,25 +160,30 @@ class Gce(Provisioner):
 
     def post_destroy(self):
         try:
+            self.logger.info("Destroying firewall rule")
             self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-all"))
         except ResourceNotFoundError:
             pass
         try:
+            self.logger.info("Destroying firewall rule")
             self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-internal"))
         except ResourceNotFoundError:
             pass
 
         try:
+            self.logger.info("Destroying firewall rule")
             self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-master"))
         except ResourceNotFoundError:
             pass
 
         try:
+            self.logger.info("Destroying firewall rule")
             self.compute.ex_destroy_firewall(self.compute.ex_get_firewall(self.name + "-infra"))
         except ResourceNotFoundError:
             pass
 
         try:
+            self.logger.info("Destroying network")
             self.compute.ex_destroy_network(self.compute.ex_get_network(self.name))
         except ResourceNotFoundError:
             pass
