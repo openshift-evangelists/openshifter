@@ -16,22 +16,29 @@
 <header class="app-header navbar">
     <a class="navbar-brand" href="#">OpenShifter</a>
 </header>
-<div class="app-body" id="app">
+<div class="app-body">
     <div class="sidebar">
         <nav class="sidebar-nav">
             <ul class="nav">
                 <li class="nav-item">
-                    <router-link class="nav-link" to="/"><i class="fa fa-dashboard"></i> Dashboard</router-link>
-                    <router-link class="nav-link" to="/generator"><i class="fa fa-cog"></i> Generator</router-link>
-                    <router-link class="nav-link" to="/deploy"><i class="fa fa-cog"></i> New deployment</router-link>
+                    <a class="nav-link {% if section=='dashboard' %}active{% endif %}" href="/">
+                        <i class="fa fa-dashboard"></i> Dashboard
+                    </a>
+                    <a class="nav-link {% if section=='generator' %}active{% endif %}" href="/page/generator">
+                        <i class="fa fa-cog"></i> Generator
+                    </a>
+                    <a class="nav-link {% if section=='deploy' %}active{% endif %}" href="/page/deploy">
+                        <i class="fa fa-cog"></i> New deployment
+                    </a>
                 </li>
             </ul>
         </nav>
     </div>
     <main class="main">
-        <router-view></router-view>
+        {% block content %}{% endblock %}
     </main>
     <aside class="aside-menu">
+        {% block side %}{% endblock %}
     </aside>
 </div>
 <footer class="app-footer">
@@ -45,5 +52,8 @@
 <script src="/static/js/vue.js"></script>
 <script src="/static/js/router.js"></script>
 <script src="/static/js/app.js"></script>
+
+{% block scripts %}{% endblock %}
+
 </body>
 </html>

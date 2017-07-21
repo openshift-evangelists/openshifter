@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div>
+    <ol class="breadcrumb">
+        <i class="fa fa-cog"></i> New deployment
+    </ol>
+    <div class="container-fluid">
+        <div id="content">
+            <div v-for="deployment in deployments">
+                <button class="btn btn-info" v-on:click="new_deployment(deployment)">Start deployment of {{ deployment }}</button>
+                <button class="btn btn-info" v-on:click="destroy_deployment(deployment)">Destroy deployment of {{ deployment }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="application/javascript">
+$.get('/deployments', function(deployments){
+    new Vue({
+        el: '#content',
+        data: {
+            deployments: deployments
+        },
+        methods: {
+            new_deployment: function (deployment) {
+                var content = $('#content');
+                content.html('');
+                var pre = $('<pre></pre>');
+                content.append(pre);
+                var ws = new WebSocket("ws://localhost:5000/stream/" + deployment);
+                ws.onmessage = function(event) {
+                    var data = JSON.parse(event.data);
+                    pre.prepend(data.line);
+                };
+                $.post('/deployments/' + deployment, function(result) {
+                });
+            },
+            destroy_deployment: function (deployment) {
+                var content = $('#content');
+                content.html('');
+                var pre = $('<pre></pre>');
+                content.append(pre);
+                var ws = new WebSocket("ws://localhost:5000/stream/" + deployment);
+                ws.onmessage = function(event) {
+                    var data = JSON.parse(event.data);
+                    pre.prepend(data.line);
+                };
+                $.ajax({
+                    url: '/deployments/' + deployment,
+                    type: 'DELETE',
+                    success: function(result) {
+                    }
+                });
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

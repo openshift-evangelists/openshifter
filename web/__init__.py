@@ -34,10 +34,6 @@ async def manage_deployment(action, name):
     for listener in listeners[name]:
         await listener.close()
 
-@aiohttp_jinja2.template('index.html')
-async def handle(request):
-    return {}
-
 async def schema(request):
     with open(os.path.join(os.path.dirname(__file__), '..', 'schema.yml'), 'r') as file:
         return web.Response(text=file.read(), content_type='application/x-yaml')
@@ -74,16 +70,25 @@ async def stream(request):
     listeners[name].remove(ws)
     return ws
 
+async def page(request):
+    name = request.match_info['name']
+    context = {'section': name, 'page': name}
+    response = aiohttp_jinja2.render_template(name + '.html', request, context)
+    return response
+
 app = web.Application()
 
 aiohttp_jinja2.setup(app, loader=jinja2.PackageLoader('web', 'templates'))
 
-app.router.add_get('/', handle)
+app.router.add_get('/', lambda request: web.HTTPFound('/page/dashboard'))
+app.router.add_get('/page/{name}', page)
+
 app.router.add_get('/schema.yml', schema)
+app.router.add_static('/static/', path=os.path.join(os.path.dirname(__file__), 'static'), name='static')
+
 app.router.add_get('/deployments', deployments)
 app.router.add_post('/deployments/{name}', new_deployment)
 app.router.add_delete('/deployments/{name}', delete_deployment)
 app.router.add_get('/stream/{name}', stream)
-app.router.add_static('/static/', path=os.path.join(os.path.dirname(__file__), 'static'), name='static')
 
 web.run_app(app, port=5000)

@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div>
+    <ol class="breadcrumb">
+        <i class="fa fa-cog"></i> Generator
+    </ol>
+    <div class="container-fluid">
+        <div class="row" id="app">
+            <div class="col-lg-6">
+                <form id="form">
+                </form>
+            </div>
+            <div class="col-lg-6">
+                {% raw %}<pre>{{ yaml }}</pre>{% endraw %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="application/javascript">
+$.get('/schema.yml', function(schema) {
+    schema = jsyaml.load(schema);
+    var struct = {};
+    var result = processSchemaSection('struct', schema.properties, struct);
+    $('#form').html(result);
+    new Vue({
+        el: '#app',
+        data: {
+            struct: struct
+        },
+        computed: {
+            yaml: function() {
+                return jsyaml.dump(this.struct);
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
