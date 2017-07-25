@@ -1,5 +1,6 @@
 import json
 import os.path
+import sys
 
 import libcloud
 from libcloud.common.google import ResourceNotFoundError, ResourceExistsError
@@ -35,6 +36,25 @@ class Gce(Provisioner):
             self.disk_image = self.compute.ex_get_image('rhel-7')
         else:
             self.disk_image = self.compute.ex_get_image('centos-7')
+
+        self.logger.info("Validating Zone and Region")
+        try:
+            self.zone = self.compute.ex_get_zone(self.gce['zone'])
+        except ResourceNotFoundError:
+            self.zone = None
+
+        try:
+            self.region = self.compute.ex_get_region(self.gce['region'])
+        except ResourceNotFoundError:
+            self.region = None
+
+        if self.zone is None:
+            self.logger.error("Zone is invalid")
+            sys.exit(1)
+
+        if self.region is None:
+            self.logger.error("Region is invalid")
+            sys.exit(1)
 
     def get_node(self, name):
         try:

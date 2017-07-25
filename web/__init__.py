@@ -10,6 +10,7 @@ import jinja2
 
 from aiohttp import web
 
+loop = asyncio.get_event_loop()
 
 class WebsocketListener:
     def __init__(self, websocket):
@@ -144,7 +145,7 @@ async def page(request):
     response = aiohttp_jinja2.render_template(name + '.html', request, context)
     return response
 
-app = web.Application()
+app = web.Application(loop=loop)
 
 aiohttp_jinja2.setup(app, loader=jinja2.PackageLoader('web', 'templates'))
 

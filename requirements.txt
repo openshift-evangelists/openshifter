@@ -11,3 +11,4 @@ aiohttp
 cchardet
 aiodns
 aiohttp_jinja2
+asyncssh
