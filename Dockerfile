@@ -4,6 +4,8 @@ RUN yum install -y https://centos7.iuscommunity.org/ius-release.rpm epel-release
 RUN yum install -y python36u python36u-libs python36u-devel python36u-pip git ansible openssh python-cryptography \
   gcc gcc-c++ pyOpenSSL libselinux-python unzip java-1.8.0-openjdk openssl-devel && yum clean all
 
+RUN localedef -i en_US -f UTF-8 en_US.UTF-8
+
 WORKDIR /root
 
 RUN git clone https://github.com/openshift/openshift-ansible.git

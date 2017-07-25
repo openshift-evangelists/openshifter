@@ -23,6 +23,8 @@ users: # creates user and associated project named as the user
   - username: admin
     password: password
     admin: true # cluster-admin role
+  - eventbrite: <event_id>
+    password_type: username # Possible values: username, fixed (add password field) 
   - username: user
     password: password
     sudoer: true
@@ -30,6 +32,8 @@ users: # creates user and associated project named as the user
       - new-app mjelen/example # execute in the context of user project
   - username: user
     password: password
+# Possible values: username(use the username), fixed (use password as it is), index (use password as prefix)
+    password_type: username 
     generic: true # generates user0 up to user3 with password0 up to password3
     min: 0
     max: 3
@@ -53,6 +57,10 @@ execute:
 docker:
   prime: # pre-pull images on all container nodes
     - mjelen/example
+
+# In case you want to autoprovision users from eventbrite
+eventbrite:
+  token: <eventbrite_token>
 
 gce:
   account: <json file name>

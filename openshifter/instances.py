@@ -136,15 +136,30 @@ def post_install(ssh, deployment):
             attendees = eventbrite.get_event_attendees(event)
 
             for attendee in attendees['attendees']:
-                project = generate_user(attendee['profile']['email'], attendee['profile']['email'], ssh)
+                if 'password_type' not in user:
+                    user['password_type'] = 'username'
+
+                if 'password' not in user:
+                    user['password'] = attendee['profile']['email']
+
+                passwd = get_password(attendee['profile']['email'], user['password_type'], user['password'], '')
+    
+                project = generate_user(attendee['profile']['email'], passwd, ssh)
 
                 if 'execute' in user:
                     execute_for_user(project, user['execute'], ssh)
 
         elif 'generic' in user and user['generic']:
             for x in range(user['min'], user['max']):
+                if 'password_type' not in user:
+                    user['password_type'] = 'username'
+
+                if 'password' not in user:
+                    user['password'] = ''
+
                 username = user['username'] + str(x)
-                password = user['password'] + str(x)
+                password = get_password(username, user['password_type'], user['password'], str(x))
+#                password = user['password'] + str(x)
 
                 project = generate_user(username, password, ssh)
 
@@ -188,3 +203,16 @@ def generate_user(username, password, ssh):
 def execute_for_user(project, execute, ssh):
     for cmd in execute:
         ssh.execute("master", cmd + " -n " + project, False)
+
+
+def get_password(user, password_type, password, index):
+    if 'fixed' in password_type:
+        return password
+
+    if 'index' in password_type:
+        return user + index
+
+    if 'username' in password_type:
+        return user
+
+    return 'openshift'
