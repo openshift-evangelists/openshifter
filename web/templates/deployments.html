@@ -1,0 +1,130 @@
+{% extends "layout.html" %}
+
+{% block content %}
+{% raw %}
+<div id="app">
+    <ol class="breadcrumb">
+        <i class="fa fa-server"></i> Deployments
+        <div class="pull-right"><i class="fa fa-spinner fa-spin fa-fw" v-if="progress"></i></div>
+    </ol>
+    <div class="container-fluid">
+        <div>
+            <div class="card" v-if="selection">
+                <div class="card-block">
+                    <table class="table table-bordered table-hover table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Cluster name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="deployment in deployments">
+                                <td>
+                                    {{ deployment.name }}
+                                </td>
+                                <td>
+                                    <div v-if="deployment.running">
+                                        <button class="btn btn-info btn-sm" v-on:click="display(deployment.name)">Display</button>
+                                    </div>
+                                    <div v-if="!deployment.running">
+                                        <button class="btn btn-success btn-sm" v-on:click="trigger('create', deployment.name)">Create</button>
+                                        <button class="btn btn-danger btn-sm" v-on:click="trigger('destroy', deployment.name)">Destroy</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div v-if="waiting">
+                <div class="alert alert-info"><strong>Waiting for process</strong></div>
+            </div>
+            <div v-if="result != null">
+                <div :class="result.clazz"><strong>{{ result.message }}</strong></div>
+            </div>
+            <div v-if="log.display">
+                <div class="card">
+                    <div class="card-header">
+                        Process log
+                    </div>
+                    <div class="card-block">
+                        <div v-for="message in log.messages">{{ message }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endraw %}
+{% endblock %}
+
+{% block scripts %}
+<script type="application/javascript">
+$.get('/api/deployments', function(deployments){
+    new Vue({
+        el: '#app',
+        data: {
+            deployments: deployments,
+            selection: true,
+            log: {
+                display: false,
+                messages: []
+            },
+            progress: false,
+            waiting: false,
+            result: null
+        },
+        methods: {
+            display: function (name) {
+                var self = this;
+                var log = $('#log');
+
+                self.selection = false;
+                self.waiting = true;
+
+                var ws = new WebSocket("ws://localhost:5000/stream/" + name);
+                ws.onopen = function (event) {
+                    self.progress = true;
+                };
+
+                ws.onmessage = function(event) {
+                    var data = JSON.parse(event.data);
+                    console.log(data);
+                    if(data.type === 'log') {
+                        self.log.messages.unshift(data.line);
+                    } else if (data.type === 'started') {
+                        self.log.display = true;
+                        self.waiting = false;
+                    } else if (data.type === 'completed') {
+                        if(data.success) {
+                            self.result = {clazz: 'alert alert-success', message: 'Deployment creation succeeded!'};
+                        } else {
+                            self.result = {clazz: 'alert alert-danger', message: 'Deployment creation failed!'};
+                        }
+                    }
+                };
+                ws.onclose = function (event) {
+                    self.progress = false;
+                };
+            },
+            trigger: function (action, name) {
+                var self = this;
+                var mth = 'POST';
+                if(action === 'destroy') mth = 'DELETE';
+
+                self.display(name);
+
+                $.ajax({
+                    url: '/api/deployments/' + name,
+                    type: mth,
+                    success: function(result) {
+
+                    }
+                });
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

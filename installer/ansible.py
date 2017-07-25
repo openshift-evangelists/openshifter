@@ -24,9 +24,12 @@ class Ansible:
         os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
         os.environ['ANSIBLE_PRIVATE_KEY_FILE'] = os.path.abspath(self.deployment['ssh']['key'])
 
-        path = os.path.abspath('openshift-ansible') + '/playbooks/byo/config.yml'
+        if 'OPENSHIFT_ANSIBLE' in os.environ:
+            path = os.environ['OPENSHIFT_ANSIBLE'] + '/playbooks/byo/config.yml'
+        else:
+            path = os.path.abspath('openshift-ansible') + '/playbooks/byo/config.yml'
 
-        cmd = ["ansible-playbook", '-vvvv', '-i', inventory, path]
+        cmd = ["ansible-playbook", '-i', inventory, path]
 
         logging.info("Executing " + str(cmd) + ' in ' + os.getcwd())
 

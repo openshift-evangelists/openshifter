@@ -4,13 +4,16 @@ import paramiko
 class Ssh:
     def __init__(self, deployment, cluster):
         self.deployment = deployment
-        self.cluster = cluster
         self.hosts = {"*": []}
 
-        self.connect("master", cluster.master)
-        self.connect("infra", cluster.infra)
+        self.connect("master", cluster.master.public_address)
+        self.connect("infra", cluster.infra.public_address)
+
+        if cluster.pvs:
+            self.connect("pvs", cluster.pvs.public_address)
+
         for node in cluster.nodes:
-            self.connect("node", node)
+            self.connect("node", node.public_address)
 
     def connect(self, tag, address):
         client = paramiko.SSHClient()
@@ -24,6 +27,7 @@ class Ssh:
         self.hosts["*"].append(client)
 
     def execute(self, tag, cmd, sudo=False):
+        result = []
         if sudo:
             cmd = 'sudo bash -c \'' + cmd + '\''
         for client in self.hosts[tag]:
@@ -31,7 +35,16 @@ class Ssh:
             channel.exec_command(cmd)
             stdout = channel.makefile('r', -1)
             stderr = channel.makefile_stderr('r', -1)
-            return SshResult(channel.recv_exit_status(), stdout.read(), stderr.read())
+            result.append(SshResult(channel.recv_exit_status(), stdout.read(), stderr.read()))
+        return result
+
+    def write(self, tag, target, content):
+        for client in self.hosts[tag]:
+            sftp = client.open_sftp()
+            file = sftp.file(target, 'w')
+            file.write(content)
+            file.close()
+
 
 class SshResult:
     def __init__(self, code, stdout, stderr ):

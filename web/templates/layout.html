@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>OpenShifter</title>
+
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/static/css/coreui.css" rel="stylesheet">
+    <link href="/static/css/app.css" rel="stylesheet">
+</head>
+
+<body class="app header-fixed sidebar-fixed aside-menu-fixed footer-fixed">
+<header class="app-header navbar">
+    <a class="navbar-brand" href="#">OpenShifter</a>
+</header>
+<div class="app-body">
+    <div class="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link {% if section=='dashboard' %}active{% endif %}" href="/">
+                        <i class="fa fa-dashboard"></i> Dashboard
+                    </a>
+                    <a class="nav-link {% if section=='generator' %}active{% endif %}" href="/page/generator">
+                        <i class="fa fa-cog"></i> Generator
+                    </a>
+                    <a class="nav-link {% if section=='deployments' %}active{% endif %}" href="/page/deployments">
+                        <i class="fa fa-server"></i> Deployments
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <main class="main">
+        {% block content %}{% endblock %}
+    </main>
+    <aside class="aside-menu">
+        {% block side %}{% endblock %}
+    </aside>
+</div>
+<footer class="app-footer">
+</footer>
+
+<script src="/static/js/esprima.js"></script>
+<script src="/static/js/yaml.js"></script>
+<script src="/static/js/jquery.js"></script>
+<script src="/static/js/tether.js"></script>
+<script src="/static/js/bootstrap.js"></script>
+<script src="/static/js/vue.js"></script>
+<script src="/static/js/router.js"></script>
+<script src="/static/js/app.js"></script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>
