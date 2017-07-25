@@ -1,5 +1,7 @@
 # OpenShifter
 
+[![Build Status](https://travis-ci.org/openshift-evangelists/openshifter.svg?branch=python)](https://travis-ci.org/openshift-evangelists/openshifter)
+
 A tool to provision and install OpenShift clusters.
 
 Usage:
