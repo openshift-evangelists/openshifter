@@ -194,7 +194,7 @@ def generate_user(username, password, ssh):
     logging.info("Generating user %s with password %s and project %s", username, password, project)
 
     ssh.execute("master", "htpasswd -b /etc/origin/master/htpasswd " + username + " " + password, True)
-    ssh.execute("master", "oc new-project " + project, False)
+    ssh.execute("master", "oc adm new-project " + project, False)
     ssh.execute("master", "oc adm policy add-role-to-user admin " + username + " -n " + project, False)
 
     return project
