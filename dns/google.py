@@ -1,6 +1,6 @@
-from libcloud.common.google import ResourceExistsError, ResourceNotFoundError
+from libcloud.common.google import ResourceExistsError
 from libcloud.dns.providers import get_driver
-from libcloud.dns.types import RecordType
+from libcloud.dns.types import RecordType, RecordDoesNotExistError
 
 import json
 import logging
@@ -39,7 +39,7 @@ class Google:
                 record = self.get_record("A", name)
                 self.logger.info("Destroying DNS record %s" % name)
                 self.dns.delete_record(record)
-            except ResourceNotFoundError:
+            except RecordDoesNotExistError:
                 self.logger.error("DNS record does not exist")
 
     def get_record(self, type, name):
