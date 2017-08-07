@@ -12,6 +12,7 @@ class Deployment:
             self.data['name'] = name
 
         self.name = self.data['name']
+        self.version = Version(self.data['release'])
 
         if 'installer' not in self.data:
             self.data['installer'] = 'ansible'
@@ -52,3 +53,24 @@ class Deployment:
 
     def __getitem__(self, key):
         return self.data[key]
+
+
+class Version:
+    def __init__(self, version):
+        version = str(version)
+        if version.startswith("v"):
+            version = version[1:]
+        self.openshift, self.major, self.minor = version.split(".")
+        self.openshift = int(self.openshift)
+        self.major = int(self.major)
+        self.minor = int(self.minor)
+
+    def __str__(self):
+        return "v%s.%s.%s" % (self.openshift, self.major, self.minor)
+
+    def git(self):
+        if self.major < 6:
+            base = 1
+        else:
+            base = 3
+        return "release-%s.%s" % (base, self.major)

@@ -16,7 +16,7 @@ class Docker(Base):
                 self.logger.info("Docker is already setup")
 
         for result in self.execute("*", "docker info", True):
-            if result.stdout.find(b'Storage Driver: devicemapper') == -1:
+            if result.stdout.find(b'Data loop file') > -1:
                 self.logger.info("Setting Docker devicemapper storage")
                 result.connection.execute("*", "echo DEVS=/dev/sdb >> /etc/sysconfig/docker-storage-setup", True)
                 result.connection.execute("*", "echo VG=DOCKER >> /etc/sysconfig/docker-storage-setup", True)

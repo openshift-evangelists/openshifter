@@ -1,6 +1,6 @@
 FROM centos
 
-RUN yum install -y https://centos7.iuscommunity.org/ius-release.rpm epel-release centos-release-openshift-origin
+RUN yum install -y https://centos7.iuscommunity.org/ius-release.rpm epel-release
 RUN yum install -y python36u python36u-libs python36u-devel python36u-pip git ansible openssh python-cryptography \
   gcc gcc-c++ pyOpenSSL libselinux-python unzip java-1.8.0-openjdk openssl-devel && yum clean all
 
@@ -9,7 +9,7 @@ RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 WORKDIR /root
 
 RUN git clone https://github.com/openshift/openshift-ansible.git
-RUN cd openshift-ansible && git checkout release-1.5 && cd ..
+RUN cd openshift-ansible && git checkout release-3.6 && cd ..
 
 ADD entrypoint.sh requirements.txt /root/
 

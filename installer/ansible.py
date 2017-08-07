@@ -25,11 +25,31 @@ class Ansible:
         os.environ['ANSIBLE_PRIVATE_KEY_FILE'] = os.path.abspath(self.deployment['ssh']['key'])
 
         if 'OPENSHIFT_ANSIBLE' in os.environ:
-            path = os.environ['OPENSHIFT_ANSIBLE'] + '/playbooks/byo/config.yml'
+            ansible_dir = os.environ['OPENSHIFT_ANSIBLE']
         else:
-            path = os.path.abspath('openshift-ansible') + '/playbooks/byo/config.yml'
+            ansible_dir = os.path.abspath('openshift-ansible')
+
+        path = os.path.join(ansible_dir, 'playbooks/byo/config.yml')
 
         cmd = ["ansible-playbook", '-i', inventory, path]
+
+        process = subprocess.Popen(["git", "checkout", self.deployment.version.git()], cwd= ansible_dir,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, universal_newlines=True)
+
+        def reader(label, pipe):
+            while True:
+                buf = pipe.readline()
+                if buf == '':
+                    break
+                else:
+                    buf = buf.strip()
+                if buf != '':
+                    logging.info(label + " => " + buf)
+
+        threading.Thread(target=reader, args=("stderr", process.stderr)).start()
+        threading.Thread(target=reader, args=("stdout", process.stdout)).start()
+
+        process.wait()
 
         logging.info("Executing " + str(cmd) + ' in ' + os.getcwd())
 
