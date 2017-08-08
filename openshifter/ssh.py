@@ -24,11 +24,8 @@ class Ssh:
 
     def connect(self, tag, address):
         if address not in self.clients:
-            client = paramiko.SSHClient()
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
-            client.connect(address, username="openshift", key_filename=self.deployment['ssh']['key'],
-                        allow_agent=False, look_for_keys=False)
-            self.clients[address] = SshClient(client, address, self.deployment, self.cluster)
+            self.clients[address] = SshClient(address, self.deployment, self.cluster)
+            self.clients[address].connect()
             self.hosts["*"].append(address)
 
         self.clients[address].tag(tag)
@@ -72,12 +69,18 @@ class Ssh:
 
 
 class SshClient:
-    def __init__(self, client, address, deployment, cluster):
+    def __init__(self, address, deployment, cluster):
         self.deployment = deployment
         self.cluster = cluster
-        self.client = client
+        self.client = None
         self.address = address
         self.tags = []
+
+    def connect(self):
+        self.client = paramiko.SSHClient()
+        self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
+        self.client.connect(self.address, username="openshift", key_filename=self.deployment['ssh']['key'],
+                       allow_agent=False, look_for_keys=False)
 
     def tag(self, tag):
         if tag not in self.tags:
@@ -96,7 +99,12 @@ class SshClient:
         if sudo:
             cmd = 'sudo bash -c \'' + cmd + '\''
 
-        channel = self.client.get_transport().open_session()
+        try:
+            channel = self.client.get_transport().open_session()
+        except TimeoutError:
+            self.connect()
+            channel = self.client.get_transport().open_session()
+
         channel.exec_command(cmd)
         stdout = channel.makefile('r', -1)
         stderr = channel.makefile_stderr('r', -1)
@@ -107,7 +115,12 @@ class SshClient:
         template = Template(target)
         target = template.render({'cluster': self.cluster, 'deployment': self.deployment.data})
 
-        sftp = self.client.open_sftp()
+        try:
+            sftp = self.client.open_sftp()
+        except TimeoutError:
+            self.connect()
+            sftp = self.client.open_sftp()
+
         file = sftp.file(target, 'w')
         file.write(content)
         file.close()
@@ -116,7 +129,12 @@ class SshClient:
         template = Template(target)
         target = template.render({'cluster': self.cluster, 'deployment': self.deployment.data})
 
-        sftp = self.client.open_sftp()
+        try:
+            sftp = self.client.open_sftp()
+        except TimeoutError:
+            self.connect()
+            sftp = self.client.open_sftp()
+
         file = sftp.file(target, 'r')
         data = file.read()
         file.close()

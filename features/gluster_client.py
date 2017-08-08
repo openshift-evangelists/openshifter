@@ -6,7 +6,7 @@ class GlusterClient(Base):
         return self.check_component('pvs') and self.deployment['pvs']['type'] == 'gluster'
 
     def applicable(self):
-        return ["infra", "node"]
+        return ["*", "-pvs"]
 
     def call(self, connection):
         self.logger.info("Installing Gluster client")
