@@ -3,11 +3,15 @@ import yaml
 from features import Base
 
 
-class PVsStorage(Base):
+class PVs(Base):
     def check(self):
         return self.check_component('pvs')
 
-    def setup(self):
+    def applicable(self):
+        return ["master"]
+
+    def call(self, connection):
+        self.logger.info("Setting up PVs")
         for i in range(0, self.deployment['pvs']['count']):
             name = 'pv-' + str(i)
             pv = {
@@ -31,9 +35,13 @@ class PVsStorage(Base):
                     'persistentVolumeReclaimPolicy': 'Recycle'
                 }
             }
-            self.execute("master", "mkdir -p /pvs/" + name, True)
-            self.execute("master", "chmod 777 /pvs/" + name, True)
-            self.execute("master", "restorecon /pvs/" + name, True)
+            self.logger.info("Creating directory structure")
+            connection.execute("mkdir -p /pvs/" + name, True)
+            connection.execute("chmod 777 /pvs/" + name, True)
+            connection.execute("restorecon /pvs/" + name, True)
 
-            self.upload("master", "pv.yml", yaml.dump(pv))
-            self.execute("master", "oc create -f pv.yml")
+            self.logger.info("Creating PV")
+            connection.upload("pv.yml", yaml.dump(pv))
+            result = connection.execute("oc create -f pv.yml")
+            if result.code > 0:
+                self.logger.info("PV creating failed")

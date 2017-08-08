@@ -5,13 +5,14 @@ import os
 
 from jinja2 import Template
 
+from features import Base
 
-class Ansible:
-    def __init__(self, deployment):
-        self.deployment = deployment
-        pass
 
-    def install(self, cluster):
+class Ansible(Base):
+    def check(self):
+        return self.deployment['installer'] == 'ansible'
+
+    def setup(self):
         file = open(os.path.dirname(os.path.realpath(__file__)) + "/ansible.jinja", "r")
         template = file.read()
         file.close()
@@ -19,7 +20,7 @@ class Ansible:
 
         inventory = os.path.abspath(self.deployment.dir + "/ansible.ini")
         file = open(inventory, "w")
-        file.write(template.render({'cluster': cluster, 'deployment': self.deployment.data}))
+        file.write(template.render({'cluster': self.cluster, 'deployment': self.deployment.data}))
         file.close()
         os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
         os.environ['ANSIBLE_PRIVATE_KEY_FILE'] = os.path.abspath(self.deployment['ssh']['key'])
@@ -33,7 +34,7 @@ class Ansible:
 
         cmd = ["ansible-playbook", '-i', inventory, path]
 
-        process = subprocess.Popen(["git", "checkout", self.deployment.version.git()], cwd= ansible_dir,
+        process = subprocess.Popen(["git", "checkout", self.deployment.version.git()], cwd=ansible_dir,
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, universal_newlines=True)
 
         def reader(label, pipe):
@@ -44,14 +45,14 @@ class Ansible:
                 else:
                     buf = buf.strip()
                 if buf != '':
-                    logging.info(label + " => " + buf)
+                    self.logger.info(label + " => " + buf)
 
         threading.Thread(target=reader, args=("stderr", process.stderr)).start()
         threading.Thread(target=reader, args=("stdout", process.stdout)).start()
 
         process.wait()
 
-        logging.info("Executing " + str(cmd) + ' in ' + os.getcwd())
+        self.logger.info("Executing " + str(cmd) + ' in ' + os.getcwd())
 
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False,
                                    universal_newlines=True)
@@ -64,11 +65,11 @@ class Ansible:
                 else:
                     buf = buf.strip()
                 if buf != '':
-                    logging.info(label + " => " + buf)
+                    self.logger.info(label + " => " + buf)
 
         threading.Thread(target=reader, args=("stderr", process.stderr)).start()
         threading.Thread(target=reader, args=("stdout", process.stdout)).start()
 
         process.wait()
 
-        logging.info("Exit code " + str(process.returncode))
+        self.logger.info("Exit code " + str(process.returncode))

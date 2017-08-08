@@ -5,7 +5,6 @@ from openshifter.deployment import Deployment
 
 import provider
 import dns
-import installer
 from openshifter.ssh import Ssh
 
 
@@ -33,15 +32,16 @@ class OpenShifter:
     def install(self):
         if self.cluster.valid:
             features.execute("pre_install", self.deployment, self.cluster)
-            driver = installer.find(self.deployment)
-            driver.install(self.cluster)
+            features.execute("install", self.deployment, self.cluster)
+            features.execute("post_install", self.deployment, self.cluster)
         else:
             logging.error("Cluster is not valid. Did you provision it?")
 
     def setup(self):
         if self.cluster.valid:
-            pass
+            features.execute("pre_setup", self.deployment, self.cluster)
             features.execute("setup", self.deployment, self.cluster)
+            features.execute("post_setup", self.deployment, self.cluster)
         else:
             logging.error("Cluster is not valid. Did you provision it?")
 

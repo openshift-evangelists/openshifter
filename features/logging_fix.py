@@ -5,5 +5,9 @@ class LoggingFix(Base):
     def check(self):
         return self.check_component("logging")
 
-    def setup(self):
-        self.execute("master", "systemctl restart origin-master", True)
+    def applicable(self):
+        return ["master"]
+
+    def call(self, connection):
+        self.logger.info("Restarting master to fix logging")
+        connection.execute("systemctl restart origin-master", True)

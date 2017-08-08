@@ -9,7 +9,10 @@ class Users(Base):
     def check(self):
         return True
 
-    def setup(self):
+    def applicable(self):
+        return ["master"]
+
+    def call(self, connection):
         for user in self.deployment['users']:
             if 'eventbrite' in user:
                 token = self.deployment['eventbrite']['token']
@@ -27,10 +30,10 @@ class Users(Base):
 
                     passwd = self.get_password(attendee['profile']['email'], user['password_type'], user['password'], '')
 
-                    project = self.generate_user(attendee['profile']['email'], passwd)
+                    project = self.generate_user(attendee['profile']['email'], passwd, connection)
 
                     if 'execute' in user:
-                        self.execute_for_user(project, user['execute'])
+                        self.execute_for_user(project, user['execute'], connection)
 
             elif 'generic' in user and user['generic']:
                 for x in range(user['min'], user['max']):
@@ -43,46 +46,42 @@ class Users(Base):
                     username = user['username'] + str(x)
                     password = self.get_password(username, user['password_type'], user['password'], str(x))
 
-                    project = self.generate_user(username, password)
+                    project = self.generate_user(username, password, connection)
 
                     if 'execute' in user:
-                        self.execute_for_user(project, user['execute'])
+                        self.execute_for_user(project, user['execute'], connection)
 
             else:
                 username = user['username']
-                project = self.generate_user(username, user['password'])
+                project = self.generate_user(username, user['password'], connection)
 
                 if 'admin' in user and user['admin']:
-                    self.execute("master", "oc adm policy add-cluster-role-to-user cluster-admin " + username)
+                    connection.execute("oc adm policy add-cluster-role-to-user cluster-admin " + username)
 
                 if 'sudoer' in user and user['sudoer']:
-                    self.execute("master", "oc adm policy add-cluster-role-to-user sudoer " + username)
+                    connection.execute("oc adm policy add-cluster-role-to-user sudoer " + username)
 
                 if 'execute' in user:
-                    self.execute_for_user(project, user['execute'])
+                    self.execute_for_user(project, user['execute'], connection)
 
         if 'execute' in self.deployment.data:
             for cmd in self.deployment['execute']:
-                self.execute("master", cmd)
+                connection.execute(cmd)
 
-        if 'docker' in self.deployment.data and 'prime' in self.deployment['docker']:
-            for image in self.deployment['docker']['prime']:
-                self.execute("*", "docker pull " + image, True)
-
-    def generate_user(self, username, password):
+    def generate_user(self, username, password, connection):
         project = re.sub(r'[^-0-9a-z]', '-', username)
 
         self.logger.info("Generating user %s with password %s and project %s", username, password, project)
 
-        self.execute("master", "htpasswd -b /etc/origin/master/htpasswd " + username + " " + password, True)
-        self.execute("master", "oc adm new-project " + project, False)
-        self.execute("master", "oc adm policy add-role-to-user admin " + username + " -n " + project)
+        connection.execute("htpasswd -b /etc/origin/master/htpasswd " + username + " " + password, True)
+        connection.execute("oc adm new-project " + project, False)
+        connection.execute("oc adm policy add-role-to-user admin " + username + " -n " + project)
 
         return project
 
-    def execute_for_user(self, project, execute):
+    def execute_for_user(self, project, execute, connection):
         for cmd in execute:
-            self.execute("master", cmd + " -n " + project)
+            connection.execute(cmd + " -n " + project)
 
     def get_password(self, user, type, password, index):
         if 'fixed' == type:
