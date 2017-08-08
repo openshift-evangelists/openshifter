@@ -62,9 +62,9 @@ class Base:
 
     def setup(self):
         for client in self.ssh().for_tags(self.applicable()):
-            self.logger.info("Starting feature for %s" % client.address)
+            self.logger.info("Starting feature for %s (%s)" % (client.address, ",".join(client.tags)))
             self.call(client)
-            self.logger.info("Feature completed for %s" % client.address)
+            self.logger.info("Feature completed for %s (%s)" % (client.address, ",".join(client.tags)))
 
     def call(self, connection):
         pass

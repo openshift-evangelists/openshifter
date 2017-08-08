@@ -17,7 +17,7 @@ RUN pip3.6 install -r requirements.txt
 
 ADD main.py /root/
 ADD dns /root/dns
-ADD installer /root/installer
+ADD features /root/features
 ADD openshifter /root/openshifter
 ADD provider /root/provider
 
