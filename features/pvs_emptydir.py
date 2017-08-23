@@ -1,12 +1,12 @@
 from features import Base
 
 
-class HostPath(Base):
+class PvsEmptyDir(Base):
     def check(self):
-        return self.check_component('pvs') and self.deployment['pvs']['type'] == 'hostPath'
+        return True
 
     def applicable(self):
-        return ['master']
+        return ['*', '-pvs']
 
     def call(self, connection):
         if connection.execute("mount").stdout.find(b'/dev/mapper/DOCKER-PVS') == -1:

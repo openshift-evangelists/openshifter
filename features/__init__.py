@@ -8,7 +8,7 @@ FEATURES = {
     "pre_install": [
         "features.basic",
         "features.docker",
-        "features.host_path",
+        "features.pvs_emptydir",
         "features.gluster_server",
         "features.gluster_client",
     ],
