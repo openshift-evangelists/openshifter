@@ -23,11 +23,12 @@ class Google:
         self.logger.info("Looking up zone")
         zone = self.dns.get_zone(self.deployment['dns']['zone'])
 
-        for name in ['console', '*.apps']:
+        for item in [['console', cluster.master.public_address], ['*.apps', cluster.infra.public_address]]:
+            name = item[0]
             name = name + '.' + self.deployment.name + '.' + self.deployment['dns']['suffix'] + '.'
             try:
                 self.logger.info("Creating DNS record %s" % name)
-                data = {'ttl': 60, 'rrdatas': [cluster.infra.public_address]}
+                data = {'ttl': 60, 'rrdatas': [item[1]]}
                 self.dns.create_record(name, zone, RecordType.A, data)
             except ResourceExistsError:
                 self.logger.info("Record already exists")
