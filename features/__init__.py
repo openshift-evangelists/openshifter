@@ -14,9 +14,12 @@ FEATURES = {
     ],
     "install": [
         "features.ansible",
+        "features.ocu",
     ],
     "post_install": [],
-    "pre_setup": [],
+    "pre_setup": [
+        "features.ocu_blocker",
+    ],
     "setup": [
         "features.logging_fix",
         "features.runasroot",
@@ -73,13 +76,13 @@ class Base:
         return self.ssh_client
 
     def execute(self, tag, cmd, sudo=False):
-        return self.ssh().execute(tag, cmd, sudo)
+        return self.ssh().for_tags(tag)[0].execute(cmd, sudo)
 
     def upload(self, tag, target, content):
-        return self.ssh().write(tag, target, content)
+        return self.ssh().for_tags(tag)[0].upload(target, content)
 
     def download(self, tag, target):
-        return self.ssh().read(tag, target)
+        return self.ssh().for_tags(tag)[0].download(target)
 
     def check_component(self, name):
         return name in self.deployment['components'] and self.deployment['components'][name]

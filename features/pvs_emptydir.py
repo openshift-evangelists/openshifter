@@ -9,7 +9,7 @@ class PvsEmptyDir(Base):
         return ['*', '-pvs']
 
     def call(self, connection):
-        if connection.execute("mount").stdout.find(b'/dev/mapper/DOCKER-PVS') == -1:
+        if connection.execute("mount").stdout.find('/dev/mapper/DOCKER-PVS') == -1:
             connection.execute("lvcreate -l 100%FREE -n PVS DOCKER", True)
             connection.execute("mkfs.xfs /dev/mapper/DOCKER-PVS", True)
             connection.execute("mkdir -p /var/lib/origin/openshift.local.volumes", True)

@@ -1,7 +1,5 @@
-from functools import reduce
-
+import logging
 import paramiko
-
 from jinja2 import Template
 
 
@@ -76,6 +74,8 @@ class SshClient:
         self.address = address
         self.tags = []
 
+        self.logger = logging.getLogger("SSH(%s)" % self.address)
+
     def connect(self):
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
@@ -99,6 +99,8 @@ class SshClient:
         if sudo:
             cmd = 'sudo bash -c \'' + cmd + '\''
 
+        self.logger.debug("Executing: %s", cmd)
+
         try:
             channel = self.client.get_transport().open_session()
         except TimeoutError:
@@ -109,7 +111,12 @@ class SshClient:
         stdout = channel.makefile('r', -1)
         stderr = channel.makefile_stderr('r', -1)
 
-        return SshResult(channel.recv_exit_status(), stdout.read(), stderr.read(), self)
+        result = SshResult(channel.recv_exit_status(), stdout.read(), stderr.read(), self)
+
+        self.logger.debug("Exit code: %s", result.code)
+        self.logger.debug("STDOUT: %s", result.stdout)
+        self.logger.debug("STDERR: %s", result.stderr)
+        return result
 
     def upload(self, target, content):
         template = Template(target)
@@ -124,6 +131,8 @@ class SshClient:
         file = sftp.file(target, 'w')
         file.write(content)
         file.close()
+
+
 
     def download(self, target):
         template = Template(target)
