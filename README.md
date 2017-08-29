@@ -1,6 +1,6 @@
 # OpenShifter
 
-[![Build Status](https://travis-ci.org/openshift-evangelists/openshifter.svg?branch=python)](https://travis-ci.org/openshift-evangelists/openshifter)
+[![Build Status](https://travis-ci.org/openshift-evangelists/openshifter.svg?branch=master)](https://travis-ci.org/openshift-evangelists/openshifter)
 [![Dependency Status](https://gemnasium.com/badges/github.com/openshift-evangelists/openshifter.svg)](https://gemnasium.com/github.com/openshift-evangelists/openshifter)
 
 A tool to provision and install OpenShift clusters.
