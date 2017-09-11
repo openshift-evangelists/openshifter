@@ -21,7 +21,7 @@ class Docker(Base):
             connection.execute("echo DEVS=/dev/sdb >> /etc/sysconfig/docker-storage-setup", True)
             connection.execute("echo VG=DOCKER >> /etc/sysconfig/docker-storage-setup", True)
             connection.execute("echo SETUP_LVM_THIN_POOL=yes >> /etc/sysconfig/docker-storage-setup", True)
-            connection.execute("echo DATA_SIZE=\"70%FREE\" >> /etc/sysconfig/docker-storage-setup", True)
+            connection.execute("echo DATA_SIZE=\"100%FREE\" >> /etc/sysconfig/docker-storage-setup", True)
 
             self.logger.info("Stopping Docker")
             connection.execute("systemctl stop docker", True)

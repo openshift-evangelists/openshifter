@@ -3,7 +3,7 @@ from features import Base
 
 class PvsEmptyDir(Base):
     def check(self):
-        return True
+        return False
 
     def applicable(self):
         return ['*', '-pvs']
