@@ -122,6 +122,7 @@ class Gce(Provisioner):
         }
         if size is None:
             args['image'] = self.disk_image
+            size = 100
 
         self.logger.info("Creating disk %s" % name)
         return self.compute.create_volume(size, self.name + "-" + name, **args)
