@@ -70,7 +70,7 @@ class Gce(Provisioner):
 
     def create_node(self, name, labels):
         boot = self.create_disk(name + "-root")
-        docker = self.create_disk(name + "-docker", 100)
+        docker = self.create_disk(name + "-docker", self.deployment['nodes']['disk']['docker'])
         address = self.create_address(name)
 
         try:
@@ -122,7 +122,7 @@ class Gce(Provisioner):
         }
         if size is None:
             args['image'] = self.disk_image
-            size = 100
+            size = self.deployment['nodes']['disk']['boot']
 
         self.logger.info("Creating disk %s" % name)
         return self.compute.create_volume(size, self.name + "-" + name, **args)

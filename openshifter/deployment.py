@@ -47,6 +47,15 @@ class Deployment:
         if 'type' not in self.data['nodes']:
             self.data['nodes']['type'] = 'n1-standard-1'
 
+        if 'disk' not in self.data['nodes']:
+            self.data['nodes']['disk'] = {}
+
+        if 'size' not in self.data['nodes']['disk']:
+            self.data['nodes']['disk']['boot'] = 100
+
+        if 'size' not in self.data['nodes']['disk']:
+            self.data['nodes']['disk']['docker'] = 100
+
         self.dir = os.path.abspath("openshifter/" + self.name)
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)

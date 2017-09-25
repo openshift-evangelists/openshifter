@@ -49,7 +49,8 @@ nodes:
   podsPerCore: 10 # how many pods can be on a node per core
   type: n1-standard-1 # See a list of machine types: https://cloud.google.com/compute/docs/machine-types
   disk:
-    size: 100 # The docker storage disk in GB
+    boot: 100   # The boot disk in GB
+    docker: 100 # The docker storage disk in GB
 
 execute:
   - oc new-app mjelen/example # execute commands on master node
