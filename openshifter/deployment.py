@@ -50,10 +50,10 @@ class Deployment:
         if 'disk' not in self.data['nodes']:
             self.data['nodes']['disk'] = {}
 
-        if 'size' not in self.data['nodes']['disk']:
+        if 'boot' not in self.data['nodes']['disk']:
             self.data['nodes']['disk']['boot'] = 100
 
-        if 'size' not in self.data['nodes']['disk']:
+        if 'docker' not in self.data['nodes']['disk']:
             self.data['nodes']['disk']['docker'] = 100
 
         self.dir = os.path.abspath("openshifter/" + self.name)
@@ -66,16 +66,32 @@ class Deployment:
 
 class Version:
     def __init__(self, version):
+        self.openshift = None
+        self.major = None
+        self.minor = None
+
         version = str(version)
+
         if version.startswith("v"):
             version = version[1:]
-        self.openshift, self.major, self.minor = version.split(".")
+
+        vs = version.split(".")
+        if len(vs) == 3:
+            self.openshift, self.major, self.minor = vs
+        else:
+            self.openshift, self.major = vs
+
         self.openshift = int(self.openshift)
         self.major = int(self.major)
-        self.minor = int(self.minor)
+
+        if self.minor is not None:
+            self.minor = int(self.minor)
 
     def __str__(self):
-        return "v%s.%s.%s" % (self.openshift, self.major, self.minor)
+        if self.minor is not None:
+            return "v%s.%s.%s" % (self.openshift, self.major, self.minor)
+        else:
+            return "v%s.%s" % (self.openshift, self.major)
 
     def git(self):
         if self.major < 6:
