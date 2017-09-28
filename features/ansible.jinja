@@ -1,9 +1,15 @@
 [OSEv3:children]
 masters
 nodes
+{% if 'serviscatalog' in deployment.components and deployment.components.serviscatalog %}nfs{% endif %}
 
 [masters]
 {{ cluster.master.public_address }}{% if not deployment.nodes.infra %} openshift_schedulable=true{% endif %}
+
+{% if 'serviscatalog' in deployment.components and deployment.components.serviscatalog %}
+[nfs]
+{{ cluster.master.public_address }}
+{% endif %}
 
 [nodes]
 {{ cluster.infra.public_address }} openshift_schedulable=true openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
@@ -37,6 +43,19 @@ openshift_deployment_type={% if deployment.type == 'ocp' %}openshift-enterprise{
 {% if deployment.nodes.count > 0 %}osm_default_node_selector='region=primary'{% endif %}
 
 {% if 'cockpit' in deployment.components and deployment.components.cockpit %}osm_use_cockpit=true{% endif %}
+
+{% if 'serviscatalog' in deployment.components and deployment.components.serviscatalog %}
+openshift_enable_service_catalog=true
+openshift_service_catalog_image_prefix=openshift/origin-
+openshift_service_catalog_image_version=latest
+openshift_hosted_etcd_storage_kind=nfs
+openshift_hosted_etcd_storage_nfs_options="*(rw,root_squash,sync,no_wdelay)"
+openshift_hosted_etcd_storage_nfs_directory=/opt/osev3-etcd
+openshift_hosted_etcd_storage_volume_name=etcd-vol2
+openshift_hosted_etcd_storage_access_modes=["ReadWriteOnce"]
+openshift_hosted_etcd_storage_volume_size=1G
+openshift_hosted_etcd_storage_labels={'storage': 'etcd'}
+{% endif %}
 
 {% if 'metrics' in deployment.components and deployment.components.metrics %}
 openshift_hosted_metrics_deploy=True

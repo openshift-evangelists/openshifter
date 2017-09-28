@@ -3,7 +3,10 @@ import openshifter.cli
 import logging
 import os
 
-logging.basicConfig(level=logging.INFO)
+if os.environ.get("DEBUG", "false") == "true":
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 if __name__ == '__main__':
     os.environ['LC_ALL']= 'en_US.UTF-8'

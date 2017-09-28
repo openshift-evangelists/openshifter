@@ -5,6 +5,11 @@ type: origin # origin or ocp
 release: v1.5.1 # full version for Origin; for OCP master.minor is enough
 installer: ansible # currently only Ansible
 
+rhsm: # subscription management for OCP
+  username: <username>
+  password: <password>
+  pool: <id>
+
 dns:
   zone: <zone name> # zone name depends on provider; if set to "nip" will use nip.io
   suffix: <domain name> # DNS to access cluster (console, *.apps).cluster-name.suffix
@@ -18,6 +23,7 @@ components:
   metrics: false # if true, deploys Metrics
   logging: false # if true, deploys Logging
   pvs: false # enables PersistentVolumes
+  serviscatalog: false # if true, deploy service catalog
 
 users: # creates user and associated project named as the user
   - username: admin

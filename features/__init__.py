@@ -6,6 +6,7 @@ from openshifter.ssh import Ssh
 
 FEATURES = {
     "pre_install": [
+        "features.rhsm",
         "features.basic",
         "features.docker",
         "features.pvs_emptydir",
