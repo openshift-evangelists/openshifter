@@ -21,6 +21,7 @@ class RHSM(Base):
         repos += ' --enable="rhel-7-fast-datapath-rpms"'
         repos += ' --enable="rhel-7-server-ose-3.%s-rpms"' % (self.deployment.version.major)
 
+        connection.execute("yum install -y subscription-manager", True)
         connection.execute("/sbin/subscription-manager register --username=\"%s\" --password=\"%s\"" % (u, p), True)
         connection.execute("/sbin/subscription-manager attach --pool=%s" % pool, True)
         connection.execute('/sbin/subscription-manager repos --disable="*"', True)
