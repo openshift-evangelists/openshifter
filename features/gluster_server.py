@@ -10,10 +10,16 @@ class GlusterServer(Base):
 
     def call(self, connection):
         if connection.execute("gluster volume info", True).stdout.find("Volume Name: pvs") == -1:
-            self.logger.info("Installing Gluster")
-            connection.execute("yum -y update", True)
-            connection.execute("yum install -y centos-release-gluster310", True)
-            connection.execute("yum install -y glusterfs gluster-cli glusterfs-libs glusterfs-server", True)
+            if self.deployment['type'] == 'ocp'
+                self.logger.info("Installing Gluster using RHEL RPMS")
+                connection.execute("subscription-manager repos --enable rh-gluster-3-for-rhel-7-server-rpms", True)
+                connection.execute("yum -y update", True)
+                connection.execute("yum install -y glusterfs glusterfs-cli glusterfs-libs glusterfs-server", True)
+            else
+                self.logger.info("Installing Gluster")
+                connection.execute("yum -y update", True)
+                connection.execute("yum install -y centos-release-gluster310", True)
+                connection.execute("yum install -y glusterfs gluster-cli glusterfs-libs glusterfs-server", True)
 
             self.logger.info("Setting up storage")
             connection.execute("pvcreate /dev/sdb", True)
