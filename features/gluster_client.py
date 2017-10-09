@@ -9,11 +9,11 @@ class GlusterClient(Base):
         return ["*", "-pvs"]
 
     def call(self, connection):
-        if self.deployment['type'] == 'ocp'
+        if self.deployment['type'] == 'ocp':
             self.logger.info("Installing Gluster using RHEL RPMS")
             connection.execute("subscription-manager repos --enable rh-gluster-3-client-for-rhel-7-server-rpms", True)
             connection.execute("yum install -y glusterfs glusterfs-cli glusterfs-libs glusterfs-fuse", True)
-        else
+        else:
             self.logger.info("Installing Gluster client")
             connection.execute("yum install -y centos-release-gluster310", True)
             connection.execute("yum install -y glusterfs gluster-cli glusterfs-libs glusterfs-fuse", True)
