@@ -65,7 +65,7 @@ docker:
   prime: # pre-pull images on all container nodes
     - mjelen/example
 
-# In case you want to autoprovision users from eventbrite
+# In case you want to autoprovision users from eventbrite
 eventbrite:
   token: <eventbrite_token>
 
