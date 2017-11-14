@@ -2,7 +2,7 @@ name: cluster-name # file base name wihtou .yml if not specified
 bastion: false # Bationed deployment, WIP, do not use
 provider: gce
 type: origin # origin or ocp
-release: v1.5.1 # full version for Origin; for OCP master.minor is enough
+release: v3.6.1 # full version for Origin; for OCP master.minor is enough
 installer: ansible # currently only Ansible
 
 rhsm: # subscription management for OCP
