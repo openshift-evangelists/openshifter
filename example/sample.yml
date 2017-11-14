@@ -2,7 +2,7 @@ name: cluster-name # file base name wihtou .yml if not specified
 bastion: false # Bationed deployment, WIP, do not use
 provider: gce
 type: origin # origin or ocp
-release: v1.5.1 # full version for Origin; for OCP master.minor is enough
+release: v3.6.1 # full version for Origin; for OCP master.minor is enough
 installer: ansible # currently only Ansible
 
 rhsm: # subscription management for OCP
@@ -30,7 +30,7 @@ users: # creates user and associated project named as the user
     password: password
     admin: true # cluster-admin role
   - eventbrite: <event_id>
-    password_type: username # Possible values: username, fixed (add password field) 
+    password_type: username # Possible values: username, fixed (add password field)
   - username: user
     password: password
     sudoer: true
@@ -39,7 +39,7 @@ users: # creates user and associated project named as the user
   - username: user
     password: password
 # Possible values: username(use the username), fixed (use password as it is), index (use password as prefix)
-    password_type: username 
+    password_type: username
     generic: true # generates user0 up to user3 with password0 up to password3
     min: 0
     max: 3
