@@ -142,3 +142,8 @@ If you get this error, the yaml file contains a non-ASCII character.
 To find the offending line(s) call:
 
     perl -lne 'print if /[^[:ascii:]]/' cluster01.yml
+
+## `InvalidRequestError: 'Invalid JWT: Token must be a short-lived token...`
+
+This error can appear when your computer has gone to sleep and the Docker VM's clock got out of sync.
+Restarting the Docker daemon should fix it.
