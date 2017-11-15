@@ -60,8 +60,11 @@ __NOTE__: If running `docker` directly from the same folder where descriptors an
 
 Following are instructions required to get OpenShift working on top Google Cloud Platform (GCP).
 
-First, you need to get a GCP account and create a project for running OpenShift on it.
-Creating the project can be done using the GCP user interface or via the [`gce/create-project-gce.sh`](gce/create-project-gce.sh) script.
+First install the [Google Cloud SDK](register for an account in Google Cloud ()) in your local environment. 
+Then, get a GCP account if you don't already own one.
+
+Next, you need to create a project for running OpenShift on it. 
+Creating the project can be done either using the GCP user interface or via the [`gce/create-project-gce.sh`](gce/create-project-gce.sh) script.
 The instructions for using the user interface are not available yet, so the best would be to use the script.
 
 To run the script, you just need to provide a name and the email registered with your GCP account:
