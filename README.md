@@ -75,6 +75,12 @@ This JSON file name, along with the generate project name, need to be added to t
 
 Next, call create on OpenShifter as shown in the general instructions above.
 
+#### Billing under control
+
+When not using OpenShift instance on Google Cloud, make sure you shutdown cluster master and other nodes.
+To do that go to `Compute Engine / VM instances` and stop all VM instances.
+
+
 ### AWS
 
 ### Azure
