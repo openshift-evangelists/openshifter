@@ -23,7 +23,7 @@ components:
   metrics: false # if true, deploys Metrics
   logging: false # if true, deploys Logging
   pvs: false # enables PersistentVolumes
-  serviscatalog: false # if true, deploy service catalog
+  servicecatalog: false # if true, deploy service catalog
 
 users: # creates user and associated project named as the user
   - username: admin
