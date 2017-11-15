@@ -10,7 +10,6 @@ class Provisioner:
             self.logger = logger
 
     def validate(self):
-        self.logger.info("Validating cluster state")
         cluster = Cluster()
         cluster.valid = True
 
