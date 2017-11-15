@@ -46,8 +46,13 @@ Check the provider documentation for provider-specific files and configuration t
 Start the deployment process
 
 ```
-$ docker run -ti -v `pwd`:/root/data docker.io/osevg/openshifter create cluster01
+$ docker run -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01
 ```
+
+__NOTE__: If running `docker` directly from the same folder where descriptors and SSH keys are located, you can pass in ``pwd`` as path to your directory, e.g.
+
+    $ docker run -ti -v `pwd`:/root/data ...
+
 
 ## Provider documentation
 
@@ -98,13 +103,13 @@ First, try to remove all OpenShifter images locally and get a fresh one, e.g.
 
 If that does not solve your problem and you have a partially installed cluster, try destroying it:
 
-    docker run -e -ti -v `pwd`:/root/data docker.io/osevg/openshifter destroy cluster01
+    docker run -e -ti -v (path to your directory):/root/data docker.io/osevg/openshifter destroy cluster01
 
 Note that at times, destroying a cluster might timeout. If that happens, simply try again until it completes. 
 
 Finally, you can find out more information about what OpenShifter does by passing in `DEBUG=true` as environment variable:
 
-    docker run -e "DEBUG=true" -ti -v `pwd`:/root/data docker.io/osevg/openshifter create cluster01
+    docker run -e "DEBUG=true" -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01
 
 
 ## Errors
@@ -122,8 +127,8 @@ There's no need to generate `OPENSSH` keys here, the `RSA` keys generated above 
 Normally, this error appears when trying to connect to a partially installed OpenShift cluster which maybe used a different key to the one you're passing in now.
 So, to overcome this problem, simply destroy the OpenShift cluster and recreate it:
 
-    docker run -e -ti -v `pwd`:/root/data docker.io/osevg/openshifter destroy cluster01
-    docker run -e -ti -v `pwd`:/root/data docker.io/osevg/openshifter create cluster01     
+    docker run -e -ti -v (path to your directory):/root/data docker.io/osevg/openshifter destroy cluster01
+    docker run -e -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01     
 
 ## `PasswordRequiredException: Private key file is encrypted`
 
