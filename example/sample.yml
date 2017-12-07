@@ -67,8 +67,8 @@ docker:
     - mjelen/example
 
 # In case you want to autoprovision users from eventbrite
-eventbrite:
-  token: <eventbrite_token>
+# eventbrite:
+#  token: <eventbrite_token>
 
 gce:
   account: <json file name>
