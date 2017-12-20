@@ -1,6 +1,7 @@
 .idea
 *.iml
 .ansible
+.vscode
 **/*.pyc
 openshift-ansible
 temp

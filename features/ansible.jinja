@@ -26,6 +26,11 @@ ansible_become=yes
 enable_excluders=false
 enable_docker_excluder=false
 
+{% if deployment.nodes.infra %}
+openshift_master_api_port=443
+openshift_master_console_port=443
+{% endif %}
+
 containerized=True
 #openshift_use_system_containers=True
 os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
