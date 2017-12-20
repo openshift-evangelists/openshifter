@@ -11,10 +11,11 @@ rhsm: # subscription management for OCP
   pool: <id>
 
 dns:
+  # provider : nip # if you don't have a domain name, set provider to nip and remove zone and suffix
   zone: <zone name> # zone name depends on provider; if set to "nip" will use nip.io
   suffix: <domain name> # DNS to access cluster (console, *.apps).cluster-name.suffix
 
-# Generate SSH key pair: e.g. `ssh-keygen -t rsa -b 4096 -C "me@here.com" -f openshift-key`
+# Generate SSH key pair (see README file)
 ssh:
   key: <name of the key pair, e.g., openshift-key>
 
@@ -23,7 +24,7 @@ components:
   metrics: false # if true, deploys Metrics
   logging: false # if true, deploys Logging
   pvs: false # enables PersistentVolumes
-  serviscatalog: false # if true, deploy service catalog
+  servicecatalog: false # if true, deploy service catalog
 
 users: # creates user and associated project named as the user
   - username: admin
@@ -66,8 +67,8 @@ docker:
     - mjelen/example
 
 # In case you want to autoprovision users from eventbrite
-eventbrite:
-  token: <eventbrite_token>
+# eventbrite:
+#  token: <eventbrite_token>
 
 gce:
   account: <json file name>

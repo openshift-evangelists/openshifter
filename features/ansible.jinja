@@ -1,12 +1,12 @@
 [OSEv3:children]
 masters
 nodes
-{% if 'serviscatalog' in deployment.components and deployment.components.serviscatalog %}nfs{% endif %}
+{% if 'servicecatalog' in deployment.components and deployment.components.servicecatalog %}nfs{% endif %}
 
 [masters]
 {{ cluster.master.public_address }}{% if not deployment.nodes.infra %} openshift_schedulable=true{% endif %}
 
-{% if 'serviscatalog' in deployment.components and deployment.components.serviscatalog %}
+{% if 'servicecatalog' in deployment.components and deployment.components.servicecatalog %}
 [nfs]
 {{ cluster.master.public_address }}
 {% endif %}
@@ -49,7 +49,7 @@ openshift_deployment_type={% if deployment.type == 'ocp' %}openshift-enterprise{
 
 {% if 'cockpit' in deployment.components and deployment.components.cockpit %}osm_use_cockpit=true{% endif %}
 
-{% if 'serviscatalog' in deployment.components and deployment.components.serviscatalog %}
+{% if 'servicecatalog' in deployment.components and deployment.components.servicecatalog %}
 openshift_enable_service_catalog=true
 openshift_service_catalog_image_prefix=openshift/origin-
 openshift_service_catalog_image_version=latest
