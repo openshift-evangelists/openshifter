@@ -71,6 +71,8 @@ class Gce(Provisioner):
     def create_node(self, name, labels):
         boot = self.create_disk(name + "-root")
         docker = self.create_disk(name + "-docker", self.deployment['nodes']['disk']['docker'])
+        if name == "master":
+            pvs = self.create_disk(name + "-pvs", self.deployment['nodes']['disk']['pvs'])
         address = self.create_address(name)
 
         try:
@@ -96,6 +98,8 @@ class Gce(Provisioner):
                                             )
             self.logger.info("Attaching Docker volume")
             self.compute.attach_volume(node, docker, ex_auto_delete=True)
+            if name == "master":
+                self.compute.attach_volume(node, pvs, ex_auto_delete=True)
         except ResourceExistsError:
             self.logger.info('Node already exists')
             node = self.get_node(self.name + "-" + name)

@@ -11,7 +11,9 @@ class Ocu(Base):
         self.execute("master", "systemctl stop NetworkManager.service", True)
 
         if self.execute("master", "[ -f /bin/oc ]").code == 1:
-            cmd = 'curl -s https://github.com/openshift/origin/releases | '
+            self.execute("master", 'curl -s https://github.com/openshift/origin/releases > origin.releases.tmp')
+
+            cmd = 'cat origin.releases.tmp | '
             cmd += 'sed -n "s/^.*openshift-origin-client-tools-{{ deployment.release }}'
             cmd += '\.\([0-9]*\)-\{0,1\}\([^-]*\)-\([a-z0-9]*\)-linux-64bit.tar.gz.*$/'
             cmd += '{{ deployment.release }} \\1 \\2 \\3/p" | head -n 1'
@@ -23,8 +25,16 @@ class Ocu(Base):
             if rel != '':
                 version += "-%s" % rel
 
-            link = 'https://github.com/openshift/origin/releases/download/%s/openshift-origin-client-tools-' % version
-            link += '%s-%s-linux-64bit.tar.gz' % (version, hash)
+            if major == 'v3.7':
+                cmd = 'cat origin.releases.tmp | '
+                cmd += 'sed -n "s/^.*\(https:\/\/gcsweb-ci.svc.ci.openshift.org\/gcs\/origin-ci-test\/branch-logs\/origin\/'
+                cmd += '%s\/builds\/test_branch_origin_cross\/[0-9]*\/artifacts\/zips\/\).*$/\\1/p"'
+
+                link = self.execute("master", cmd % version).stdout.strip()
+                link += 'openshift-origin-client-tools-%s-%s-linux-64bit.tar.gz' % (version, hash)
+            else:
+                link = 'https://github.com/openshift/origin/releases/download/%s/openshift-origin-client-tools-' % version
+                link += '%s-%s-linux-64bit.tar.gz' % (version, hash)
 
             self.execute("master", "curl -L -o oc.tar.gz %s" % link, True)
             self.execute("master", "tar -xf oc.tar.gz && mv openshift-origin-client-tools-*/oc /bin/ && rm oc.tar.gz && rm -rf openshift-origin-client-tools-*", True)

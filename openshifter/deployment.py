@@ -13,6 +13,7 @@ class Deployment:
 
         self.name = self.data['name']
         self.version = Version(self.data['release'])
+        self.data['version'] = self.version
 
         if 'installer' not in self.data:
             self.data['installer'] = 'ansible'
@@ -56,6 +57,9 @@ class Deployment:
         if 'docker' not in self.data['nodes']['disk']:
             self.data['nodes']['disk']['docker'] = 100
 
+        if 'pvs' not in self.data['nodes']['disk']:
+            self.data['nodes']['disk']['pvs'] = 100
+
         self.dir = os.path.abspath("openshifter/" + self.name)
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)
@@ -69,11 +73,15 @@ class Version:
         self.openshift = None
         self.major = None
         self.minor = None
+        self.suffix = None
 
         version = str(version)
 
         if version.startswith("v"):
             version = version[1:]
+
+        if version.find('-') > -1:
+            version, self.suffix = version.split('-')
 
         vs = version.split(".")
         if len(vs) == 3:
@@ -89,6 +97,17 @@ class Version:
 
     def __str__(self):
         if self.minor is not None:
+            return "v%s.%s.%s" % (self.openshift, self.major, self.minor)
+        else:
+            return "v%s.%s" % (self.openshift, self.major)
+
+    def release(self):
+        return "v%s.%s" % (self.openshift, self.major)
+
+    def full(self):
+        if self.suffix is not None:
+            return "v%s.%s.%s-%s" % (self.openshift, self.major, self.minor, self.suffix)
+        elif self.minor is not None:
             return "v%s.%s.%s" % (self.openshift, self.major, self.minor)
         else:
             return "v%s.%s" % (self.openshift, self.major)
