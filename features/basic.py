@@ -13,4 +13,4 @@ class Basic(Base):
         connection.execute("yum update -y", True)
 
         self.logger.info("Installing tmux")
-        connection.execute("yum install -y tmux sed", True)
+        connection.execute("yum install -y tmux sed jq", True)
