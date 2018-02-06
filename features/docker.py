@@ -13,8 +13,11 @@ class Docker(Base):
             self.logger.info("Installing Docker")
             connection.execute("yum install -y docker", True)
             connection.execute("systemctl start docker", True)
+            connection.execute("systemctl enable docker", True)
         else:
             self.logger.info("Docker is already setup")
+            connection.execute("systemctl start docker", True)
+            connection.execute("systemctl enable docker", True)
 
         if connection.execute("docker info", True).stdout.find('Data loop file') > -1:
             self.logger.info("Setting up LVM storage")
