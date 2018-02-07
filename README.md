@@ -115,6 +115,31 @@ Finally, you can find out more information about what OpenShifter does by passin
     docker run -e "DEBUG=true" -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01
 
 
+## Logs
+
+If having issues, you should check the logs in the following locations:
+
+Start by looking at the `Serial port 1 console` within the Google Cloud VM instance.
+It shows system log of the VM instance and should be your starting point.
+
+OpenShift logs are stored in `/var/log/messages` within the VM instance and they're accessible via SSH.
+To access this log you need root access, so to download them you need to do some work.
+In the VM instance, copy the log file to the `openshift` user home and change ownership:
+
+```bash
+sudo su
+cp /var/log/messages /home/openshift
+cd /home/openshift
+chown openshift:openshift messages 
+```   
+
+Then, use the openshifter SSH key in your machine to download it:
+
+```bash
+scp -i openshifter-key openshift@<ip address>:messages .
+```
+
+
 ## Errors
 
 This section explains common errors found and how to resolve them: 
@@ -133,20 +158,70 @@ So, to overcome this problem, simply destroy the OpenShift cluster and recreate 
     docker run -e -ti -v (path to your directory):/root/data docker.io/osevg/openshifter destroy cluster01
     docker run -e -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01     
 
-## `PasswordRequiredException: Private key file is encrypted`
+### `PasswordRequiredException: Private key file is encrypted`
 
 The generated SSH keys are password protected.
 Either unencrypt them or regenerate them with an empty password. 
 You can pass in `-N ""` to `ssh-keygen` to automate this.
 
-## `UnicodeDecodeError: 'ascii' codec can't decode byte...`
+### `UnicodeDecodeError: 'ascii' codec can't decode byte...`
 
 If you get this error, the yaml file contains a non-ASCII character.
 To find the offending line(s) call:
 
     perl -lne 'print if /[^[:ascii:]]/' cluster01.yml
 
-## `InvalidRequestError: 'Invalid JWT: Token must be a short-lived token...`
+### `InvalidRequestError: 'Invalid JWT: Token must be a short-lived token...`
 
 This error can appear when your computer has gone to sleep and the Docker VM's clock got out of sync.
 Restarting the Docker daemon should fix it.
+
+### Accessing console returns `ERR_CONNECTION_TIMED_OUT` 
+
+If OpenShift console times out, you should check whether you can SSH into it.
+You can try SSH into the master by pressing the `SSH` button next to the VM instance in the Google Cloud console.
+If SSH doesn't work, the machine is unreachable in which case you should click `RESET` button.
+Clicking `RESET` restarts the machine.
+
+When the master comes back up, the console might not be available returning `ERR_CONNECTION_REFUSED`.
+In this case, check the next section.
+
+### Accessing console returns `ERR_CONNECTION_REFUSED`
+
+If accessing OpenShift console returns `ERR_CONNECTION_REFUSED`, most likely neither `docker` nor OpenShift are running.
+Even if the OpenShift console is not accessible, SSH should work.
+
+If using `ocu` installer, it could be that when the machine was restarted, neither `docker` not OpenShift were booted up.
+This can be fixed by redeploying the OpenShift cluster, e.g.
+
+```bash
+docker run -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01
+```
+
+If still getting `ERR_CONNECTION_REFUSED` after executing this, you might have to manually start `docker`.
+To do that, SSH into the machine and execute:
+
+```bash
+$ docker ps
+Cannot connect to the Docker daemon. Is the docker daemon running on this host?
+$ systemctl start docker
+$ docker ps
+CONTAINER ID        IMAGE                         
+<empty>
+```
+
+Once `docker` is running again, redeploy the OpenShift cluster, e.g.
+
+```bash
+docker run -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01
+```
+ 
+If you go back to the SSH session in the machine, OpenShift should appear as a `docker` container process:
+
+```bash
+CONTAINER ID        IMAGE                         
+ad22cdca3811        openshift/origin-pod:v3.6.1   
+b0e6721aadb0        openshift/origin:v3.6.1       
+```
+
+You should now be able to access OpenShift console.
