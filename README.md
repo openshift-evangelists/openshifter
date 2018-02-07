@@ -133,25 +133,25 @@ So, to overcome this problem, simply destroy the OpenShift cluster and recreate 
     docker run -e -ti -v (path to your directory):/root/data docker.io/osevg/openshifter destroy cluster01
     docker run -e -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01     
 
-## `PasswordRequiredException: Private key file is encrypted`
+### `PasswordRequiredException: Private key file is encrypted`
 
 The generated SSH keys are password protected.
 Either unencrypt them or regenerate them with an empty password. 
 You can pass in `-N ""` to `ssh-keygen` to automate this.
 
-## `UnicodeDecodeError: 'ascii' codec can't decode byte...`
+### `UnicodeDecodeError: 'ascii' codec can't decode byte...`
 
 If you get this error, the yaml file contains a non-ASCII character.
 To find the offending line(s) call:
 
     perl -lne 'print if /[^[:ascii:]]/' cluster01.yml
 
-## `InvalidRequestError: 'Invalid JWT: Token must be a short-lived token...`
+### `InvalidRequestError: 'Invalid JWT: Token must be a short-lived token...`
 
 This error can appear when your computer has gone to sleep and the Docker VM's clock got out of sync.
 Restarting the Docker daemon should fix it.
 
-## Accessing console returns `ERR_CONNECTION_TIMED_OUT` 
+### Accessing console returns `ERR_CONNECTION_TIMED_OUT` 
 
 If OpenShift console times out, you should check whether you can SSH into it.
 You can try SSH into the master by pressing the `SSH` button next to the VM instance in the Google Cloud console.
@@ -161,7 +161,7 @@ Clicking `RESET` restarts the machine.
 When the master comes back up, the console might not be available returning `ERR_CONNECTION_REFUSED`.
 In this case, check the next section.
 
-## Accessing console returns `ERR_CONNECTION_REFUSED`
+### Accessing console returns `ERR_CONNECTION_REFUSED`
 
 If accessing OpenShift console returns `ERR_CONNECTION_REFUSED`, most likely neither `docker` nor OpenShift are running.
 Even if the OpenShift console is not accessible, SSH should work.
