@@ -115,6 +115,31 @@ Finally, you can find out more information about what OpenShifter does by passin
     docker run -e "DEBUG=true" -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01
 
 
+## Logs
+
+If having issues, you should check the logs in the following locations:
+
+Start by looking at the `Serial port 1 console` within the Google Cloud VM instance.
+It shows system log of the VM instance and should be your starting point.
+
+OpenShift logs are stored in `/var/log/messages` within the VM instance and they're accessible via SSH.
+To access this log you need root access, so to download them you need to do some work.
+In the VM instance, copy the log file to the `openshift` user home and change ownership:
+
+```bash
+sudo su
+cp /var/log/messages /home/openshift
+cd /home/openshift
+chown openshift:openshift messages 
+```   
+
+Then, use the openshifter SSH key in your machine to download it:
+
+```bash
+scp -i openshifter-key openshift@<ip address>:messages .
+```
+
+
 ## Errors
 
 This section explains common errors found and how to resolve them: 
