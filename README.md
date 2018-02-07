@@ -150,3 +150,53 @@ To find the offending line(s) call:
 
 This error can appear when your computer has gone to sleep and the Docker VM's clock got out of sync.
 Restarting the Docker daemon should fix it.
+
+## Accessing console returns `ERR_CONNECTION_TIMED_OUT` 
+
+If OpenShift console times out, you should check whether you can SSH into it.
+You can try SSH into the master by pressing the `SSH` button next to the VM instance in the Google Cloud console.
+If SSH doesn't work, the machine is unreachable in which case you should click `RESET` button.
+Clicking `RESET` restarts the machine.
+
+When the master comes back up, the console might not be available returning `ERR_CONNECTION_REFUSED`.
+In this case, check the next section.
+
+## Accessing console returns `ERR_CONNECTION_REFUSED`
+
+If accessing OpenShift console returns `ERR_CONNECTION_REFUSED`, most likely neither `docker` nor OpenShift are running.
+Even if the OpenShift console is not accessible, SSH should work.
+
+If using `ocu` installer, it could be that when the machine was restarted, neither `docker` not OpenShift were booted up.
+This can be fixed by redeploying the OpenShift cluster, e.g.
+
+```bash
+docker run -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01
+```
+
+If still getting `ERR_CONNECTION_REFUSED` after executing this, you might have to manually start `docker`.
+To do that, SSH into the machine and execute:
+
+```bash
+$ docker ps
+Cannot connect to the Docker daemon. Is the docker daemon running on this host?
+$ systemctl start docker
+$ docker ps
+CONTAINER ID        IMAGE                         
+<empty>
+```
+
+Once `docker` is running again, redeploy the OpenShift cluster, e.g.
+
+```bash
+docker run -ti -v (path to your directory):/root/data docker.io/osevg/openshifter create cluster01
+```
+ 
+If you go back to the SSH session in the machine, OpenShift should appear as a `docker` container process:
+
+```bash
+CONTAINER ID        IMAGE                         
+ad22cdca3811        openshift/origin-pod:v3.6.1   
+b0e6721aadb0        openshift/origin:v3.6.1       
+```
+
+You should now be able to access OpenShift console.
